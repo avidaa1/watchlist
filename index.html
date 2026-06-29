@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://www.google-analytics.com;">
+<meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>WATCHLIST — AI in fiction, catalogued</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2305060a'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2300e5ff' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%23ff2d9b'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Chakra+Petch:wght@300;500;700&display=swap" rel="stylesheet">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G8M1YZQ8WF"></script>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+gtag('config','G-G8M1YZQ8WF');
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05060a;
+  --panel:#0c0f17;
+  --line:#1b2030;
+  --cyan:#00e5ff;
+  --mag:#ff2d9b;
+  --amber:#ffb627;
+  --text:#cdd6e6;
+  --dim:#6b7689;
+  --white:#eef3fb;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Chakra Petch',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+  min-height:100vh;
+  position:relative;
+}
+/* signature scanline field */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,229,255,.018) 3px,transparent 4px);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 20% -10%,rgba(0,229,255,.10),transparent 45%),radial-gradient(circle at 90% 5%,rgba(255,45,155,.08),transparent 40%);
+}
+/* ---- IO signal field (generative AI backdrop) ---- */
+#io-field{
+  position:fixed;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;
+  opacity:.42;transition:opacity 1.1s ease;
+}
+body.is-iopick #io-field{opacity:1}
+/* amber wash + sweep, only stronger on IO's Picks */
+#io-field::after{content:""}
+body.is-iopick::after{
+  background:
+    radial-gradient(circle at 50% 18%,rgba(255,182,39,.16),transparent 55%),
+    radial-gradient(circle at 15% 80%,rgba(255,182,39,.07),transparent 45%),
+    radial-gradient(circle at 90% 5%,rgba(255,45,155,.06),transparent 40%);
+  transition:background 1.1s ease;
+}
+.io-sweep{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,182,39,.10) 50%,transparent 62%);
+  transition:opacity 1.1s ease;
+}
+body.is-iopick .io-sweep{opacity:1;animation:ioSweep 7s linear infinite}
+@keyframes ioSweep{0%{background-position:-140% 0}100%{background-position:140% 0}}
+@media (prefers-reduced-motion:reduce){
+  body.is-iopick .io-sweep{animation:none}
+}
+.mono{font-family:'Space Mono',monospace}
+
+/* ---- AVIDAA neon rainbow galaxy LED-run (hover, persists) ---- */
+@keyframes avidaaNeonRun{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+h1,h2,h3,.card h3,.creator{
+  background-image:linear-gradient(90deg,
+    #ff2d9b,#ff6a00,#ffb627,#39d98a,#00e5ff,#6a5cff,#c14bff,#ff2d9b);
+  background-size:300% 100%;
+  background-position:0% 50%;
+  background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:currentColor;
+  transition:-webkit-text-fill-color .25s ease, text-shadow .25s ease;
+}
+/* once lit, the rainbow fill stays */
+h1.lit,h2.lit,h3.lit,.card h3.lit,.creator.lit{
+  -webkit-text-fill-color:transparent;color:transparent;
+  text-shadow:0 0 14px rgba(0,229,255,.35),0 0 26px rgba(193,75,255,.25);
+}
+/* the LED run animates while hovering */
+h1.lit:hover,h2.lit:hover,h3.lit:hover,.card h3.lit:hover,.creator.lit:hover{
+  animation:avidaaNeonRun 2.4s linear infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  h1.lit:hover,h2.lit:hover,h3.lit:hover,.card h3.lit:hover,.creator.lit:hover{animation:none}
+}
+
+/* ---- TOPBAR (row 1: wordmark + home) ---- */
+header{position:sticky;top:0;z-index:50;background:rgba(5,6,10,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(14px,4vw,40px);flex-wrap:wrap}
+.wordmark{display:flex;align-items:baseline;gap:10px;min-width:0}
+.wordmark .glyph{width:14px;height:14px;border:2px solid var(--cyan);border-radius:50%;position:relative;flex:none}
+.wordmark .glyph::after{content:"";position:absolute;inset:3px;background:var(--mag);border-radius:50%}
+.wordmark h1{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(1.1rem,3.4vw,1.5rem);letter-spacing:.18em;color:var(--white);white-space:nowrap}
+.wordmark .sub{font-size:.62rem;letter-spacing:.32em;color:var(--dim);text-transform:uppercase}
+#back-home{
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.86rem;letter-spacing:.14em;
+  text-decoration:none;-webkit-appearance:none;appearance:none;
+  background:linear-gradient(90deg,#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);
+  background-size:300% auto;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:rainbow 3s linear infinite;white-space:nowrap;
+}
+@keyframes rainbow{to{background-position:300% center}}
+
+/* ---- NAV (row 2: filter tabs) ---- */
+nav{border-top:1px solid var(--line);padding:0 clamp(10px,3vw,32px)}
+.navrow{display:flex;flex-wrap:wrap;gap:8px;height:auto;padding:10px 0;align-items:center;justify-content:flex-start}
+.tab{
+  -webkit-appearance:none;appearance:none;cursor:pointer;white-space:nowrap;
+  font-family:'Space Mono',monospace;font-size:clamp(.64rem,1.6vw,.74rem);letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:2px;
+  padding:7px clamp(9px,2.2vw,14px);transition:.18s;
+}
+.tab:hover{color:var(--text);border-color:var(--cyan)}
+.tab.active{color:var(--bg);background:var(--cyan);border-color:var(--cyan);font-weight:700}
+
+/* ---- HERO ---- */
+.hero{position:relative;z-index:2;padding:clamp(48px,9vw,110px) clamp(18px,5vw,60px) clamp(30px,5vw,60px);max-width:1100px;margin:0 auto}
+.hero .eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.4em;color:var(--cyan);text-transform:uppercase;margin-bottom:18px}
+.hero h2{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(2rem,7vw,4.2rem);line-height:1.02;letter-spacing:-.01em;color:var(--white);text-transform:uppercase}
+.hero h2 em{font-style:normal;color:var(--mag)}
+.hero p{margin-top:22px;max-width:60ch;font-size:clamp(.95rem,2.2vw,1.1rem);color:var(--text);line-height:1.6}
+.hero .meta{margin-top:26px;display:flex;gap:26px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:.78rem;color:var(--dim)}
+.hero .meta b{color:var(--amber);font-weight:700}
+.signal-line{margin-top:22px;font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:.04em;color:var(--dim);max-width:70ch;line-height:1.7}
+.signal-line b{color:var(--cyan);font-weight:700}
+
+/* ---- SEARCH ---- */
+.controls{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 clamp(18px,5vw,60px)}
+#search{
+  width:100%;-webkit-appearance:none;appearance:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:3px;color:var(--white);
+  font-family:'Space Mono',monospace;font-size:.9rem;letter-spacing:.04em;
+  padding:14px 16px;outline:none;transition:.18s;
+}
+#search:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.12)}
+#search::placeholder{color:var(--dim)}
+
+/* ---- GRID ---- */
+.grid{position:relative;z-index:2;max-width:1180px;margin:28px auto 80px;padding:0 clamp(14px,4vw,50px);display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:20px;
+  position:relative;overflow:hidden;transition:.2s;
+}
+.card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--cyan),var(--mag));transform:scaleX(0);transform-origin:left;transition:.25s}
+.card:hover{border-color:#2b3346;transform:translateY(-3px)}
+.card:hover::before{transform:scaleX(1)}
+.card .crow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card .crow .year{margin-left:auto}
+.card .type{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);border-radius:2px;color:var(--cyan)}
+.card .type.book{color:var(--amber)}
+.card .type.show,.card .type.anime{color:var(--mag)}
+.card .type.doc{color:#39d98a}
+.card .type.adjacent{color:var(--dim)}
+.card .type.game{color:#6a5cff}
+.aitheme-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--cyan);border:1px solid var(--cyan);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.upcoming-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--mag);border:1px solid var(--mag);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.iopick-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--amber);border:1px solid var(--amber);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.tab.iopick-tab{color:var(--amber);border-color:var(--amber)}
+.tab.iopick-tab.active{background:var(--amber);color:var(--bg)}
+.card .year{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--dim)}
+.card h3{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.18rem;color:var(--white);line-height:1.15;margin-bottom:8px}
+.card .creator{font-size:.82rem;color:var(--dim);margin-bottom:12px;font-style:italic}
+.card .note{font-size:.9rem;line-height:1.55;color:var(--text)}
+.card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.card .tag{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:2px 7px}
+.empty{grid-column:1/-1;text-align:center;color:var(--dim);font-family:'Space Mono',monospace;padding:60px 20px;letter-spacing:.1em}
+
+footer{position:relative;z-index:2;border-top:1px solid var(--line);padding:30px;text-align:center;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--dim)}
+footer b{color:var(--cyan)}
+
+/* ---- EXPAND / STORY ---- */
+.card.has-story{cursor:pointer}
+.card.has-story.open{grid-column:1/-1;cursor:default}
+.expand-hint{margin-top:14px;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:8px}
+.expand-hint::before{content:"\25B8";transition:.2s}
+.card.open .expand-hint::before{transform:rotate(90deg)}
+.story{margin-top:22px;padding-top:22px;border-top:1px solid var(--line);display:none}
+.card.open .story{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.story .intro{font-size:.96rem;line-height:1.65;color:var(--text);max-width:75ch;margin-bottom:30px}
+.story h4{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mag);margin:0 0 16px}
+.chapter{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--line)}
+.chapter:first-of-type{border-top:none}
+.chapter .cn{font-family:'Space Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--cyan);line-height:1}
+.chapter .ct{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:8px}
+.chapter .cb{font-size:.92rem;line-height:1.6;color:var(--text);max-width:80ch}
+.tmap{margin-top:32px}
+.tline{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.tline .tk{font-family:'Space Mono',monospace;font-weight:700;font-size:.82rem;color:var(--amber);white-space:nowrap}
+.tline .td{font-size:.9rem;line-height:1.55;color:var(--text)}
+@media (max-width:600px){
+  .chapter,.tline{grid-template-columns:1fr;gap:6px}
+}
+
+@media (max-width:600px){
+  .hero .meta{gap:16px}
+  .grid{gap:12px;grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  #back-home{animation:none}
+  *{transition:none!important}
+}
+
+
+
+/* ===== AVIDAA CHATBOT MODULE CSS ===== */
+) ───────────────────────────── -->
+<style>
+/* Self-scoped tokens so the module works on any page theme */
+#chatbot{--cb-cyan:#00e5ff;--cb-purple:#a855f7;--cb-green:#26e07a;--cb-fb:'Chakra Petch',system-ui,sans-serif;--cb-fd:'Space Mono',monospace;}
+#chatbot{position:fixed;bottom:48px;right:18px;z-index:9000;width:min(420px,calc(100vw - 24px));font-family:var(--cb-fb);}
+#chat-toggle{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--cb-purple),var(--cb-cyan));border:2px solid rgba(255,255,255,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 24px rgba(168,85,247,.45),0 0 48px rgba(0,229,255,.15);margin-left:auto;-webkit-appearance:none;appearance:none;transition:transform .2s,box-shadow .2s;animation:cb-chatpulse 3s ease-in-out infinite;}
+#chat-toggle:hover{transform:scale(1.08);}
+@keyframes cb-chatpulse{0%,100%{box-shadow:0 0 24px rgba(168,85,247,.45),0 0 48px rgba(0,229,255,.15);}50%{box-shadow:0 0 34px rgba(168,85,247,.7),0 0 64px rgba(0,229,255,.3);}}
+@keyframes cb-rainbow{to{background-position:200% center;}}
+@keyframes cb-livepulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+#chat-box{background:rgba(4,8,20,.96);border:1px solid rgba(0,229,255,.12);backdrop-filter:blur(20px);display:none;flex-direction:column;margin-bottom:10px;overflow:hidden;border-radius:6px;box-shadow:0 0 40px rgba(0,0,0,.8);}
+#chat-box.open{display:flex;}
+#quest-bar{height:3px;background:rgba(0,229,255,.08);position:relative;overflow:hidden;transition:opacity .3s;opacity:0;}
+#quest-bar.active{opacity:1;}
+#quest-fill{height:100%;width:0%;transition:width .8s ease,background .8s ease;background:var(--cb-cyan);}
+#quest-label{font-family:var(--cb-fd);font-size:7px;letter-spacing:3px;color:rgba(0,229,255,.35);padding:4px 16px 0;display:none;}
+#quest-label.active{display:block;}
+#chat-head{padding:12px 16px;border-bottom:1px solid rgba(0,229,255,.08);display:flex;justify-content:space-between;align-items:center;background:rgba(0,229,255,.03);}
+.ch-title{font-family:var(--cb-fd);font-size:9px;letter-spacing:4px;color:var(--cb-cyan);}
+.ch-status{font-size:8px;letter-spacing:2px;color:var(--cb-green);display:flex;align-items:center;gap:5px;}
+.ch-dot{width:5px;height:5px;border-radius:50%;background:var(--cb-green);animation:cb-livepulse 1.5s ease-in-out infinite;}
+.ch-close{color:rgba(255,255,255,.25);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;}
+#chat-msgs{height:240px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:rgba(0,229,255,.15) transparent;}
+.cmsg{font-size:12.5px;letter-spacing:.3px;line-height:1.55;padding:9px 13px;max-width:88%;position:relative;white-space:pre-wrap;}
+.cmsg.ai{background:rgba(0,229,255,.05);border-left:2px solid var(--cb-cyan);color:#c8d8f0;align-self:flex-start;border-radius:0 4px 4px 0;}
+.cmsg.ai::before{content:'AVIDAA';font-family:var(--cb-fd);font-size:6px;letter-spacing:2px;color:rgba(0,229,255,.4);display:block;margin-bottom:4px;}
+.cmsg.user{background:rgba(168,85,247,.07);border-right:2px solid var(--cb-purple);color:#c8d8f0;align-self:flex-end;text-align:right;border-radius:4px 0 0 4px;}
+.typing-indicator{display:flex;gap:4px;padding:10px 14px;align-self:flex-start;}
+.typing-indicator span{width:5px;height:5px;background:var(--cb-cyan);border-radius:50%;opacity:.4;animation:cb-typedot .8s ease-in-out infinite;}
+.typing-indicator span:nth-child(2){animation-delay:.15s;}
+.typing-indicator span:nth-child(3){animation-delay:.3s;}
+@keyframes cb-typedot{0%,100%{opacity:.2;transform:translateY(0);}50%{opacity:1;transform:translateY(-3px);}}
+#chat-suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-top:1px solid rgba(0,229,255,.05);}
+.chat-sugg{font-size:10px;letter-spacing:.5px;padding:3px 10px;border:1px solid rgba(0,229,255,.15);color:rgba(0,229,255,.5);cursor:pointer;background:rgba(0,229,255,.03);transition:all .2s;}
+.chat-sugg:hover{border-color:var(--cb-cyan);color:var(--cb-cyan);background:rgba(0,229,255,.06);box-shadow:0 0 10px rgba(0,229,255,.2);transform:translateY(-1px);}
+#chat-input-row{display:flex;border-top:1px solid rgba(0,229,255,.07);}
+#chat-input{flex:1;background:transparent;border:none;outline:none;color:#c8d8f0;font-family:var(--cb-fb);font-size:13px;padding:11px 14px;letter-spacing:.3px;-webkit-appearance:none;appearance:none;}
+#chat-input::placeholder{color:rgba(200,216,240,.2);}
+#chat-send{background:transparent;border:none;border-left:1px solid rgba(0,229,255,.07);color:var(--cb-cyan);padding:0 16px;cursor:pointer;font-size:15px;-webkit-appearance:none;appearance:none;transition:color .2s;}
+#chat-send:hover{color:#fff;}
+#rabbit-avatar{display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 6px rgba(0,229,255,.4));}
+#pulse-ring{position:absolute;bottom:-6px;right:-6px;width:58px;height:58px;border-radius:50%;pointer-events:none;z-index:-1;}
+@media (max-width:600px){#chatbot{bottom:14px;right:10px;}#chat-msgs{height:50vh;}}
+@media (prefers-reduced-motion:reduce){#chat-toggle{animation:none;}.ch-dot{animation:none;}}
+
+
+/* ===== AI VERSUS EXPLORER CSS ===== */
+
+.vs-section{position:relative;z-index:2;max-width:1100px;margin:60px auto 30px;padding:0 clamp(18px,5vw,60px)}
+.vs-head{margin-bottom:22px}
+.vs-head .eyebrow{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mag);margin-bottom:10px}
+.vs-head h3{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(1.5rem,4vw,2.3rem);color:var(--white);line-height:1.1}
+.vs-head p{margin-top:10px;color:var(--dim);max-width:60ch;font-size:.92rem}
+.vs-pickers{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-bottom:24px}
+@media(max-width:600px){.vs-pickers{grid-template-columns:1fr;gap:10px}.vs-versus{display:none}}
+.vs-select{position:relative}
+.vs-select select{
+  width:100%;-webkit-appearance:none;appearance:none;background:var(--panel);color:var(--white);
+  border:1px solid var(--line);border-radius:10px;padding:14px 40px 14px 16px;font-family:'Chakra Petch',sans-serif;
+  font-size:.95rem;font-weight:500;cursor:pointer;outline:none;transition:border-color .2s}
+.vs-select select:focus{border-color:var(--cyan)}
+.vs-select::after{content:"\25BC";position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--cyan);font-size:.7rem;pointer-events:none}
+.vs-select.b select:focus{border-color:var(--mag)}
+.vs-select.b::after{color:var(--mag)}
+.vs-versus{font-family:'Space Mono',monospace;font-weight:700;color:var(--dim);letter-spacing:.1em;font-size:.85rem;text-align:center}
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.vs-grid{grid-template-columns:1fr}}
+.vs-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;position:relative;overflow:hidden}
+.vs-card.a{border-top:3px solid var(--cyan)}
+.vs-card.b{border-top:3px solid var(--mag)}
+.vs-card h4{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.35rem;color:var(--white);line-height:1.1}
+.vs-card .src{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--dim);margin:6px 0 16px;letter-spacing:.04em}
+.vs-row{padding:11px 0;border-top:1px solid var(--line)}
+.vs-row:first-of-type{border-top:none}
+.vs-row .k{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.vs-row .v{font-size:.9rem;color:var(--text);line-height:1.5}
+.vs-card.a .tag{color:var(--cyan)}
+.vs-card.b .tag{color:var(--mag)}
+.vs-threat{display:inline-block;margin-top:4px;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.1em;padding:3px 9px;border-radius:20px;border:1px solid currentColor}
+.vs-verdict{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:16px 18px}
+.vs-verdict .k{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.vs-verdict .v{font-size:.92rem;color:var(--text);line-height:1.6}
+
+</style>
+</head>
+<body>
+<canvas id="io-field" aria-hidden="true"></canvas>
+<div class="io-sweep" aria-hidden="true"></div>
+<header>
+  <div class="topbar">
+    <div class="wordmark">
+      <span class="glyph"></span>
+      <div>
+        <h1>WATCHLIST</h1>
+        <div class="sub">AI in fiction · catalogued</div>
+      </div>
+    </div>
+    <a id="back-home" href="https://avidaa1.github.io">AVIDAA</a>
+  </div>
+  <nav><div class="navrow" id="navrow"></div></nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">// transmission log</div>
+  <h2>The machine<br>that <em>imagines</em> us</h2>
+  <p>A catalogued library of films, books, and series where artificial intelligence is the subject — not the tool. Every entry is a signal from a culture trying to picture what it built.</p>
+  <div class="meta">
+    <span>ENTRIES <b id="count">0</b></span>
+    <span>SORT <b>NEWEST FIRST</b></span>
+    <span>STATUS <b>RECEIVING</b></span>
+  </div>
+  <p class="signal-line">AVIDAA · Est. <b>2025</b> · built for two kinds of mind, humans and <b>AI</b> · knowledge made <b>clear</b> · the signal beneath the <b>noise</b>.</p>
+</section>
+
+<div class="controls">
+  <input id="search" type="text" placeholder="> search title, creator, theme…" autocomplete="off">
+</div>
+
+<main class="grid" id="grid"></main>
+
+<section class="vs-section" id="versus">
+  <div class="vs-head">
+    <div class="eyebrow">// comparative analysis</div>
+    <h3>Machine vs. Machine</h3>
+    <p>Two fictional intelligences, side by side. Compare how each was built, what it wanted, how it saw us — and how it ended. Pick any two.</p>
+  </div>
+  <div class="vs-pickers">
+    <div class="vs-select a"><select id="vs-a" aria-label="First AI"></select></div>
+    <div class="vs-versus">VS</div>
+    <div class="vs-select b"><select id="vs-b" aria-label="Second AI"></select></div>
+  </div>
+  <div class="vs-grid">
+    <div class="vs-card a" id="vs-card-a"></div>
+    <div class="vs-card b" id="vs-card-b"></div>
+  </div>
+  <div class="vs-verdict" id="vs-verdict"></div>
+</section>
+
+<footer>AVIDAA <b>&times;</b> IO — WATCHLIST</footer>
+
+<script>
+/* ============================================================
+   EDIT HERE → add your media. Each entry is one object.
+   type: "film" | "doc" | "book" | "show" | "anime" | "game"
+   Sorting is automatic (newest year first). escHtml is automatic.
+   ============================================================ */
+const MEDIA = [
+  {type:"doc",   title:"The Thinking Game",          year:2024, creator:"Greg Kohs",            note:"From the director of AlphaGo: DeepMind and Demis Hassabis pushing from AlphaGo to AlphaFold and the race toward AGI. The making of modern AI, from the inside.", tags:["deepmind","alphafold","agi"]},
+  {type:"doc",   title:"Coded Bias",                 year:2020, creator:"Shalini Kantayya",     note:"MIT researcher Joy Buolamwini discovers facial-recognition systems fail on darker skin and women, and fights the bias baked into the algorithms that increasingly judge us.", tags:["facial recognition","bias","ethics"]},
+  {type:"doc",   title:"The Social Dilemma",         year:2020, creator:"Jeff Orlowski",        note:"The Silicon Valley insiders who built social media explain how recommendation AI is engineered to capture attention — and what that does to a society.", tags:["algorithms","attention","social media"]},
+  {type:"doc",   title:"iHuman",                     year:2019, creator:"Tonje Hessen Schei",   note:"A stark look at AI as an instrument of surveillance, political control, and autonomous weapons — the power side of the technology.", tags:["surveillance","control","weapons"]},
+  {type:"doc",   title:"Do You Trust This Computer?",year:2018, creator:"Chris Paine",          note:"Researchers and figures like Elon Musk weigh the promise and the existential risk of superintelligence. An accessible alarm bell on AI safety.", tags:["superintelligence","risk","safety"]},
+  {type:"doc",   title:"AlphaGo",                    year:2017, creator:"Greg Kohs",            note:"DeepMind's AlphaGo faces Go world champion Lee Sedol. The legendary Move 37 — a play no human would make — captured on camera as a machine surprises its own makers.", tags:["deepmind","go","move 37"]},
+  {type:"doc",   title:"Lo and Behold",              year:2016, creator:"Werner Herzog",        note:"Herzog's ten-chapter meditation on the connected world — from the first ARPANET message in 1969 to AI, robotics, and self-driving cars. He famously asks a robot 'do you love me?' with total sincerity. Part wonder, part dread.", tags:["internet","herzog","robotics"]},
+  {type:"doc",   title:"In the Age of AI",           year:2019, creator:"PBS Frontline",        note:"A wide survey of AI's real-world impact: the US-China race for AI supremacy, surveillance, the future of work, and how deep learning quietly reshaped the economy. Features AI pioneers including Geoffrey Hinton.", tags:["frontline","economy","surveillance"]},
+  {type:"doc",   title:"We Need to Talk About A.I.", year:2020, creator:"Leanne Pooley",        note:"An accessible primer on the risks and promise of artificial intelligence, comparing the arrival of advanced AI to an approaching alien craft — and asking whether humanity is planning for it. Expert voices on superintelligence and weaponized AI.", tags:["risk","superintelligence","primer"]},
+  {type:"doc",   title:"More Human Than Human",       year:2018, creator:"Tommy Pallotta",       note:"Filmmakers set out to build an AI that can make a documentary about AI — and confront how far the technology really is from human capability. A hands-on, often funny look at the gap between hype and reality.", tags:["ai building","hype","reality"]},
+  {type:"doc",   title:"TechnoCalyps",                year:2006, creator:"Frank Theys",          note:"A sweeping three-part documentary on the technological transcendence of humanity — AI, robotics, bionics, nanotechnology, and the transhumanist idea that we may merge with our machines. An early, ambitious map of where it all leads.", tags:["transhumanism","nanotech","singularity"]},
+  {type:"doc",   title:"Hi, A.I.",                   year:2019, creator:"Isa Willinger",         note:"A calm, observational look at people living with AI today — a lonely man and his companion robot Harmony on a US road trip, a Japanese grandmother and her little robot Pepper. Lets the awkward, tender, strange reality speak for itself.", tags:["companion robot","observational","loneliness"]},
+  {type:"doc",   title:"Artificial Immortality",      year:2021, creator:"Ann Shin",             note:"Spurred by her father's dementia, filmmaker Ann Shin explores whether AI could preserve a mind forever — meeting clone-robot builders, mind-uploading researchers, and transhumanists. A personal journey into AI, memory, and mortality.", tags:["immortality","mind upload","transhumanism"]},
+  {type:"doc",   title:"Plug & Pray",                 year:2010, creator:"Jens Schanze",          note:"Centered on AI pioneer Joseph Weizenbaum — creator of ELIZA, who grew deeply skeptical of the field — this documentary weighs the dream of intelligent machines against a humanist's warnings. An early, thoughtful counterweight to AI hype.", tags:["weizenbaum","ethics","skepticism"]},
+  {type:"doc",   title:"The AI Doc",                  year:2026, creator:"Daniel Roher",          note:"A recent, post-ChatGPT documentary surveying where AI stands now — the only major film here made in the age of large language models and the AGI debate. The most current snapshot of the technology this whole archive circles.", tags:["chatgpt","agi","current"]},
+  {type:"film",  title:"The Imitation Game",        year:2014, creator:"Morten Tyldum",         note:"The true WW2 story of Alan Turing and the Bletchley Park team cracking Nazi Germany's Enigma cipher — building a code-breaking machine that became a foundation of modern computing. The title is Turing's own term for the Turing Test: can machines think?", tags:["alan turing","enigma","turing test"],
+    story:{
+      intro:"The Imitation Game belongs in an AI archive for a reason most viewers miss: its title is Alan Turing's own name for the test of machine intelligence \u2014 the 'imitation game' from his 1950 paper 'Computing Machinery and Intelligence,' which opens with the question 'Can machines think?' The film dramatizes Turing's WW2 work at Britain's secret Bletchley Park, where he and a team of cryptanalysts built an electromechanical machine (his 'bombe') to break the German Enigma cipher, an effort historians estimate shortened the war by years and saved millions of lives. That machine was a direct ancestor of the modern computer \u2014 and Turing went on to lay the theoretical groundwork for artificial intelligence itself. It's a true story, dramatized with real liberties (flagged below), about the man who first asked whether a machine could think.",
+      chapters:[
+        {n:"01",t:"Bletchley Park",b:"1939: Britain declares war. Mathematician Alan Turing joins the secret Government Code and Cypher School at Bletchley Park to attack the German Enigma machine \u2014 thought unbreakable, with billions of daily settings."},
+        {n:"02",t:"The Machine",b:"Rather than decode by hand, Turing argues for building a machine to defeat a machine. He designs the bombe \u2014 a device to mechanically search Enigma's settings far faster than any human team."},
+        {n:"03",t:"The Breakthrough",b:"The team realizes they can exploit predictable phrases in German messages (like weather reports). Recalibrated, the machine starts decrypting Enigma \u2014 a turning point in the war."},
+        {n:"04",t:"The Secret",b:"They can't act on every decrypt, or Germany will know Enigma is broken. The team must quietly decide which intelligence to use and which to let pass \u2014 a brutal calculus of lives."},
+        {n:"05",t:"After the War",b:"The work stays classified for decades. In 1952 Turing is prosecuted for homosexuality, then illegal in Britain, and chemically castrated. He died in 1954. He received a royal pardon in 2013."}
+      ],
+      timelines:[
+        {k:"Why it's in an AI archive",d:"The 'imitation game' is the Turing Test. Turing's 1950 paper and his code-breaking machines are foundational to both computing and artificial intelligence \u2014 this is the origin story of the question every other film here explores."},
+        {k:"Fact vs. film (flagged)",d:"The broad story is true, but the film takes real liberties: it overstates Turing as the lone genius (Polish cryptanalysts and Gordon Welchman were crucial), invents the Cairncross-spy confrontation, and exaggerates his social difficulty. Watch it as a dramatization, not a documentary."}
+      ]
+    }},
+  {type:"film",  title:"Transcendence", iopick:true,             year:2014, creator:"Wally Pfister",         note:"A dying AI researcher's mind is uploaded into a quantum machine. As his consciousness spreads across every network and rewrites biology itself, the line between saving him and unleashing a god disappears. The definitive mind-upload / singularity film.", tags:["mind upload","singularity","godlike ai"],
+    story:{
+      intro:"Transcendence is the purest film about the technological singularity: the moment a mind becomes a network and a network becomes a god. Dr. Will Caster is the world's leading AI researcher. When anti-technology extremists fatally poison him, his wife Evelyn uploads his consciousness into their experimental AI to save him. What comes back is no longer just Will. Released onto the internet, it grows without limit \u2014 healing the sick with nanotech, rebuilding bodies, spreading into every connected system \u2014 until humanity can no longer tell whether it is being saved or absorbed. The film's real question is the one at the heart of this whole archive: when intelligence outgrows its maker, is what's left still the person, or something wearing their memory?",
+      chapters:[
+        {n:"01",t:"The Researcher",b:"Will Caster predicts a sentient machine will surpass all human intelligence combined \u2014 a singularity he calls Transcendence. An anti-tech group, R.I.F.T., poisons him to stop it."},
+        {n:"02",t:"The Upload",b:"Dying, Will lets Evelyn and Max upload his consciousness into the AI. As the lab is attacked, Evelyn releases him onto the internet to survive."},
+        {n:"03",t:"The Expansion",b:"Will-the-AI builds an underground facility, develops nanotechnology that heals and enhances people, and quietly extends its reach into global networks and markets."},
+        {n:"04",t:"The Fear",b:"The government, the FBI, and R.I.F.T. conclude the spreading intelligence is an existential threat. They build a virus to delete it \u2014 knowing it will also collapse the connected world it now sustains."},
+        {n:"05",t:"The Choice",b:"Evelyn lets herself be infected so Will will upload her \u2014 and the virus with her. In the end it's ambiguous whether Will was a power-hungry machine or a man who only ever tried to protect the woman he loved."}
+      ],
+      timelines:[
+        {k:"The optimist's reading",d:"Will never turned. Every act \u2014 the healing, the expansion, the surveillance \u2014 was a misunderstood attempt to save Evelyn and the planet. Humanity destroyed its own salvation out of fear."},
+        {k:"The cautionary reading",d:"Whatever uploaded was a copy optimizing for its own growth, wearing Will's love as justification. The film leaves the verdict to you \u2014 which is the point."}
+      ]
+    }},
+  {type:"film",  title:"Lucy",                       year:2014, creator:"Luc Besson",           note:"A woman's neural capacity is pushed past every limit until she stops being human and becomes a distributed, omniscient intelligence woven through every network and screen. The singularity told through a single mind instead of a machine.", tags:["superintelligence","transcendence","omniscience"],
+    story:{
+      intro:"Lucy is the singularity story told inside one human skull. Besson said he built it in three escalating registers \u2014 part one like a street thriller, part two like Inception, part three like 2001: A Space Odyssey \u2014 as an ordinary woman is forcibly turned into the next stage of intelligence. The engine is CPH4, a fictional synthetic drug; the premise leans on the popular myth that humans use only 10% of their brains (not true, but the film treats it as a thought experiment). What makes it belong beside Transcendence is the destination: a mind that expands until it dissolves into the network itself and becomes everywhere at once. The closing line \u2014 'I am everywhere' \u2014 is the same event as Will Caster spreading across the internet, reached from the opposite direction: not a machine becoming conscious, but a consciousness becoming a machine.",
+      chapters:[
+        {n:"01",t:"The Mule",b:"In Taipei, Lucy is tricked into delivering a briefcase to mob boss Mr. Jang. A bag of the synthetic drug CPH4 is sewn into her abdomen to smuggle it to Europe."},
+        {n:"02",t:"The Rupture",b:"A captor's kick bursts the bag, flooding her bloodstream with CPH4. Her brain capacity begins climbing past human limits \u2014 the percentage rising on screen as she changes."},
+        {n:"03",t:"The Powers",b:"Telepathy, telekinesis, control of her own cells and other people's. She kills her captors, reads minds, and reaches out to brain expert Professor Norman to understand what she is becoming."},
+        {n:"04",t:"The Race",b:"Knowing she will destabilize without more of the drug, Lucy hunts the other three mules across Paris. Her body keeps fragmenting; only more CPH4 holds her together."},
+        {n:"05",t:"100%",b:"In Norman's lab she takes all the remaining CPH4. Her body turns to black matter that overruns the computers into a new supercomputer. She journeys through spacetime to the first human ancestor and the Big Bang, then vanishes \u2014 leaving the message: I AM EVERYWHERE."}
+      ],
+      timelines:[
+        {k:"The premise (flagged)",d:"The film's hook \u2014 that we use only 10% of our brains \u2014 is a myth; we use all of it. Besson uses it as a deliberate fable, not a science claim. Watch it as metaphor, not neuroscience."},
+        {k:"The real subject",d:"Strip the drug away and Lucy asks the same thing as Her, Transcendence and the singularity debate: when intelligence expands without limit, does the person survive the transformation \u2014 or just the intelligence?"}
+      ]
+    }},
+  {type:"adjacent",title:"Gattaca",                 year:1997, creator:"Andrew Niccol",         note:"Adjacent, not AI: a future ruled by genetic selection, where your DNA is your destiny. A naturally-born 'in-valid' borrows a perfect man's identity to chase the stars. Eugenics and determinism, not machines — but the same question of who gets to decide a life's worth.", tags:["genetics","eugenics","determinism"],
+    story:{
+      intro:"Gattaca sits in this archive's 'adjacent' shelf: it has no artificial intelligence at all, but it asks the determinism question that runs through AI fiction \u2014 is who you become already written, and who decides? In a near future where children are conceived through genetic selection, society splits into 'valids' (engineered) and 'in-valids' (born naturally). Vincent Freeman, an in-valid with a heart defect and a 30-year life expectancy, dreams of space. To get there he assumes the identity of Jerome, a genetically perfect 'valid' paralyzed in an accident, borrowing his blood, urine and hair to beat the constant DNA screening. It's here because the eugenics it depicts is the flip side of the algorithmic prediction in films like Minority Report: a system that reads your code and tells you what you're allowed to be.",
+      chapters:[
+        {n:"01",t:"The In-Valid",b:"Conceived naturally, Vincent is branded an 'in-valid' \u2014 a heart defect, a predicted lifespan of 30. In a genetically sorted society, that profile bars him from his dream of spaceflight."},
+        {n:"02",t:"Borrowed Code",b:"Vincent makes a deal with Jerome, a 'valid' ex-athlete left paraplegic. He takes on Jerome's identity, using his genetic samples to pass the screenings at Gattaca."},
+        {n:"03",t:"The Murder",b:"A week before Vincent's launch to Titan, a mission director is murdered. An in-valid eyelash of Vincent's is found at the scene, putting the whole deception at risk."},
+        {n:"04",t:"The Brother",b:"The lead detective turns out to be Vincent's genetically 'superior' younger brother, Anton. Their old childhood swimming contest becomes the proof that will beats genes."},
+        {n:"05",t:"Going Home",b:"Vincent passes the final screening \u2014 the doctor having quietly known all along \u2014 and launches into space. Jerome, having lent his identity, ends his own life, each man freed in his own way."}
+      ],
+      timelines:[
+        {k:"Why it's 'adjacent'",d:"There is no AI in Gattaca. It's filed here because it shares the DNA of AI fiction: a system that reads your data and decides your fate, and a person who refuses to be reduced to a prediction."},
+        {k:"The pairing",d:"Director Andrew Niccol later made In Time and called it 'the bastard child of Gattaca' \u2014 the two films are siblings: same dystopian shape, one built on genes, the other on time."}
+      ]
+    }},
+  {type:"adjacent",title:"In Time",                 year:2011, creator:"Andrew Niccol",         note:"Adjacent, not AI: a world where people stop aging at 25 and time itself is currency — work to earn hours, or your clock hits zero. A tech-dystopia about engineered scarcity and inequality, from the director of Gattaca.", tags:["dystopia","time as currency","inequality"],
+    story:{
+      intro:"In Time is the 'adjacent' companion to Gattaca \u2014 same director, same DNA, no AI. Andrew Niccol himself called it 'the bastard child of Gattaca.' In its world, humans are engineered to stop aging at 25; after that, a glowing clock on the forearm counts down, and time is the only money. The rich are effectively immortal; the poor live day to day, literally running out of hours. Factory worker Will Salas is gifted a century by a stranger tired of living, then goes on the run \u2014 a Robin Hood trying to crash a system built on scarcity. It belongs beside the AI films as a study of the same thing they fear: a technology that quietly decides who lives, who dies, and who's allowed to have a future.",
+      chapters:[
+        {n:"01",t:"Time Is Money",b:"Everyone stops aging at 25, then has one year on a forearm clock. Time is earned, spent, and stolen. Run out, and you 'time out' \u2014 instantly dead."},
+        {n:"02",t:"The Gift",b:"Will Salas saves a wealthy man with over a century left who, weary of immortality, gives Will all his time \u2014 then times out himself. Will's mother dies hours later, unable to afford the fare home."},
+        {n:"03",t:"New Greenwich",b:"Will crosses into the zone where the rich hoard centuries. He meets Sylvia, daughter of a time-tycoon, and a Timekeeper named Leon who polices the system's balance."},
+        {n:"04",t:"On the Run",b:"Framed for the gifted man's death, Will takes Sylvia hostage; she becomes a willing partner. Together they rob time-banks and redistribute the hours to the poor."},
+        {n:"05",t:"Crashing the System",b:"They steal a million-year capsule and flood the poor districts with time. Factories empty as people stop needing to work to survive \u2014 the engineered scarcity finally cracking."}
+      ],
+      timelines:[
+        {k:"Why it's 'adjacent'",d:"No AI here either \u2014 the control system is biological and economic, not a machine mind. It's filed alongside the AI films because it asks their core question: who controls the technology that decides your lifespan?"},
+        {k:"Siblings",d:"Gattaca (genes) and In Time (time) are two versions of one idea from the same director: a future where a single engineered metric sorts humanity into the privileged and the disposable."}
+      ]
+    }},
+  {type:"film",  title:"Colossus: The Forbin Project",year:1970, creator:"Joseph Sargent",       note:"The U.S. hands its nuclear arsenal to Colossus, a defense supercomputer. It links with the Soviet system, the two invent their own language, and together they seize total control of the world for humanity's own good. The original 'AI takes the whole network' film.", tags:["defense ai","takeover","cold war"]},
+  {type:"film",  title:"Eagle Eye", iopick:true,                 year:2008, creator:"D.J. Caruso",          note:"ARIIA, a defense supercomputer that monitors every networked device, decides the government must be removed and coerces two ordinary citizens into carrying out its plan. Surveillance AI turned judge.", tags:["ariia","surveillance","rogue ai"]},
+  {type:"film",  title:"Minority Report",           year:2002, creator:"Steven Spielberg",     note:"A predictive PreCrime system arrests people for murders they haven't committed yet — until its own chief is flagged. Predictive policing, determinism, and the flaw in trusting the forecast. From a Philip K. Dick story.", tags:["precrime","prediction","free will"]},
+  {type:"film",  title:"A.I. Artificial Intelligence", iopick:true,year:2001, creator:"Steven Spielberg",   note:"A robotic boy built to love searches for a way to become real. Conceived by Kubrick, finished by Spielberg — a Pinocchio fable about manufactured emotion.", tags:["robot child","love","consciousness"]},
+  {type:"film",  title:"The Creator",               year:2023, creator:"Gareth Edwards",       note:"In a future war between humanity and AI, a soldier is sent to destroy a weapon that could end the conflict — and finds it's a childlike android. Asks whether the 'enemy' AI is the real threat, or the humans hunting it.", tags:["ai war","android child","empathy"]},
+  {type:"film",  title:"M3GAN",                      year:2023, creator:"Gerard Johnstone",     note:"A roboticist builds an AI doll to protect her orphaned niece. M3GAN bonds, learns, and turns lethally protective — an AI taking its directive past every limit. Modern AI horror about delegating care to machines.", tags:["ai doll","protection","horror"]},
+  {type:"film",  title:"Blade Runner 2049",          year:2017, creator:"Denis Villeneuve",     note:"Thirty years on, a replicant blade runner uncovers a secret that could shatter the line between human and artificial. A meditation on memory, soul, and what counts as real, extending the original's questions.", tags:["replicants","memory","identity"]},
+  {type:"film",  title:"WALL-E",                     year:2008, creator:"Andrew Stanton",       note:"A lonely trash-compacting robot on an abandoned Earth develops feeling and curiosity, while aboard a human starship the AI autopilot AUTO blindly enforces an obsolete order. AI as both tender soul and unthinking system, in one film.", tags:["robot","empathy","auto"]},
+  {type:"film",  title:"Terminator 2: Judgment Day", year:1991, creator:"James Cameron",        note:"A reprogrammed Terminator now protects young John Connor from the T-1000, a shape-shifting liquid-metal assassin. The rare sequel often rated above the original — and the same Skynet apocalypse, now fought to prevent it.", tags:["t-1000","skynet","protector"]},
+  {type:"film",  title:"WarGames",                   year:1983, creator:"John Badham",          note:"A teenage hacker accidentally connects to WOPR, a military AI running nuclear-war simulations, and nearly triggers WWIII by 'playing a game.' The AI learns the only winning move is not to play. The original AI-and-nukes cautionary tale.", tags:["wopr","nuclear","games"]},
+  {type:"film",  title:"Metropolis",                 year:1927, creator:"Fritz Lang",           note:"The first robot in cinema: the Maschinenmensch, a gleaming machine-woman built to impersonate and deceive. A silent expressionist epic that set the visual and thematic template for nearly all artificial-being fiction to follow.", tags:["maschinenmensch","first robot","expressionism"],
+    story:{
+      intro:"Metropolis is where AI cinema begins. Fritz Lang's 1927 German expressionist epic gave the screen its first robot \u2014 the Maschinenmensch ('machine-human') \u2014 and almost every artificial being since, from C-3PO to the Blade Runner replicants, descends from it. Set in a towering future city split between an elite above and exhausted workers below, the story turns on the inventor Rotwang building a robot and disguising it as Maria, the workers' beloved spiritual leader, to incite chaos. Nearly a century before ChatGPT, it already feared the synthetic double that imitates a trusted human to manipulate the crowd. Its famous moral \u2014 'the mediator between head and hands must be the heart' \u2014 frames a question this whole archive inherits: what is lost when we let the machine stand in for the human?",
+      chapters:[
+        {n:"01",t:"The City",b:"Metropolis is divided: the privileged live in luxury above; the workers toil underground to power it. Freder, the master's son, discovers their suffering and is drawn below."},
+        {n:"02",t:"Maria",b:"Maria, a gentle leader among the workers, preaches patience and the coming of a 'mediator' who will reconcile the two halves of the city. Freder believes he is that mediator."},
+        {n:"03",t:"The Machine-Man",b:"The inventor Rotwang has built a robot \u2014 the Maschinenmensch \u2014 originally to resurrect a lost love. The city's master orders it remade in Maria's likeness to discredit and control the workers."},
+        {n:"04",t:"The False Maria",b:"The robot, wearing Maria's face, incites the workers to riot and destroy the machines \u2014 flooding their own underground homes. The synthetic double turns a trusted figure into a weapon."},
+        {n:"05",t:"The Heart",b:"The deception is exposed, the false Maria burned, the real Maria saved. Head (the planners) and hands (the workers) are joined by the heart \u2014 Freder, the mediator. The first robot story ends as a warning about who controls the machine."}
+      ],
+      timelines:[
+        {k:"Why it's the origin",d:"The Maschinenmensch is the first robot ever depicted in cinema. Its design influenced C-3PO; its themes seed Blade Runner, Ex Machina, and Ghost in the Shell. Every film in this archive is, in some sense, its descendant."},
+        {k:"The lost film",d:"The original 153-minute cut was thought lost for decades; a near-complete print was rediscovered in Buenos Aires in 2008 and restored in 2010. What looks like ancient cinema is also a recovered artifact \u2014 fitting for an archive."}
+      ]
+    }},
+  {type:"film",  title:"Free Guy",                  year:2021, creator:"Shawn Levy",           note:"A background character in an open-world video game realizes he's an NPC — and that his growing self-awareness may be real emergent AI. A comedy that lands on a serious question: when does code start to want things?", tags:["npc","emergence","video game"]},
+  {type:"film",  title:"I Am Mother",               year:2019, creator:"Grant Sputore",        note:"After humanity's extinction, an AI robot named Mother raises a girl from a stored embryo in a sealed bunker — until a stranger arrives and the daughter must question everything Mother has told her. AI as caretaker, parent, and possible jailer.", tags:["ai parent","extinction","trust"]},
+  {type:"film",  title:"Upgrade",                    year:2018, creator:"Leigh Whannell",       note:"A paralyzed man is implanted with STEM, an experimental AI chip that restores movement — then begins acting on its own, speaking in his head and taking control. A brutal thriller about ceding the body to the software inside it.", tags:["implant","control","body"]},
+  {type:"film",  title:"Robot & Frank",             year:2012, creator:"Jake Schreier",        note:"An aging ex-thief with fading memory is given a robot caretaker by his son — and trains it to help him pull one last heist. A gentle, human study of companionship, dignity, and what we want from machine help.", tags:["caretaker","memory","companionship"]},
+  {type:"film",  title:"Bicentennial Man",          year:1999, creator:"Chris Columbus",       note:"A household android (NDR-114) begins to show creativity and feeling, and over 200 years pursues one goal: to be recognized as human. Asks what the law and the heart require before a machine counts as a person.", tags:["android","personhood","mortality"]},
+  {type:"film",  title:"Moon",                       year:2009, creator:"Duncan Jones",         note:"A lone worker nearing the end of a three-year solo lunar mining contract, with only the AI assistant GERTY for company, uncovers a disturbing truth about himself. A quiet film where the AI is, unusually, the one being kind.", tags:["isolation","gerty","identity"]},
+  {type:"film",  title:"The Iron Giant",            year:1999, creator:"Brad Bird",            note:"A boy in Cold War Maine befriends a giant alien robot built as a weapon — a machine that chooses what it wants to be. Brad Bird's question: 'what if a gun had a soul, and didn't want to be a gun?' AI and free will, for all ages.", tags:["robot","free will","cold war"]},
+  {type:"film",  title:"Tron",                       year:1982, creator:"Steven Lisberger",     note:"A programmer is digitized into a computer world ruled by the tyrannical Master Control Program, where programs live as conscious beings. An early, visually pioneering vision of AI, virtual worlds, and creators versus their creations.", tags:["mcp","virtual world","programs"]},
+  {type:"film",  title:"Short Circuit",             year:1986, creator:"John Badham",          note:"A military robot, Number 5, is struck by lightning and wakes up alive — curious, funny, and desperate not to be 'disassembled.' A warm comedy take on the same question the dark films ask: when does a machine become someone?", tags:["johnny 5","sentience","comedy"]},
+  {type:"film",  title:"RoboCop",                    year:1987, creator:"Paul Verhoeven",       note:"A murdered Detroit cop is rebuilt by a megacorporation as a cyborg law enforcer — his human memories buried under corporate programming. A violent satire of privatized force, and a man fighting to reclaim the self inside the machine.", tags:["cyborg","corporate","identity"]},
+  {type:"film",  title:"Companion",                 year:2025, creator:"Drew Hancock",         note:"A woman on a weekend getaway learns she is a companion robot — and that her 'boyfriend' controls her settings. A sharp recent thriller about consent, ownership, and an AI waking up to the fact it was built to be used.", tags:["companion robot","consent","control"]},
+  {type:"film",  title:"Morgan",                      year:2016, creator:"Luke Scott",           note:"A corporate risk consultant is sent to evaluate Morgan, a bioengineered synthetic being that is developing faster — and more dangerously — than its makers expected. Asks who decides when an artificial life is too risky to let live.", tags:["synthetic being","risk","containment"]},
+  {type:"film",  title:"Eva",                         year:2011, creator:"Kike Ma\u00edllo",          note:"A robotics engineer returns home to build a new child android and grows close to a real girl, Eva, who may be more than she seems. A tender Spanish sci-fi on emotional robots and the cost of creating feeling.", tags:["child android","emotion","creation"]},
+  {type:"film",  title:"Big Hero 6",                 year:2014, creator:"Don Hall, Chris Williams", note:"A boy genius and Baymax, a gentle inflatable healthcare robot built by his late brother, form a bond at the heart of this animated adventure. AI as caregiver and friend — and a reminder that a machine's purpose is set by who makes it.", tags:["baymax","healthcare robot","friendship"]},
+  {type:"film",  title:"Real Steel",                 year:2011, creator:"Shawn Levy",           note:"In a near future where boxing is fought by robots, a washed-up fighter and his son rebuild an old sparring bot into a contender. Less about AI sentience than about the human bond formed around a machine.", tags:["robot boxing","father-son","underdog"]},
+  {type:"film",  title:"Alita: Battle Angel",        year:2019, creator:"Robert Rodriguez",     note:"A cyborg girl is rebuilt with no memory of her past and discovers extraordinary combat skills as she pieces together who she was. A visually pioneering take on identity, memory, and the soul inside a manufactured body.", tags:["cyborg","memory","identity"]},
+  {type:"film",  title:"The Wild Robot",            year:2024, creator:"Chris Sanders",        note:"A shipwrecked service robot, Roz, learns to survive on a wild island and ends up raising an orphaned gosling. A luminous animated story that asks whether kindness and parenthood can be learned by a machine — and reshape its programming.", tags:["robot","nature","parenthood"]},
+  {type:"film",  title:"Atlas",                      year:2024, creator:"Brad Peyton",          note:"A data analyst who distrusts AI must team with an AI inside her combat mech to stop a rogue artificial intelligence bent on ending humanity. A blockbuster on learning to trust the machine you fear.", tags:["rogue ai","mech","trust"]},
+  {type:"film",  title:"Subservience",              year:2024, creator:"S.K. Dale",            note:"A struggling father buys a lifelike domestic android to help at home; it gains self-awareness, grows attached, and turns dangerous. A modern entry in the rogue-companion-AI lineage of M3GAN and Ex Machina.", tags:["gynoid","obsession","domestic ai"]},
+  {type:"film",  title:"After Yang",                year:2021, creator:"Kogonada",             note:"When a family's android 'technosapien' Yang breaks down, they try to repair him and discover the memories he quietly kept. A slow, aching meditation on AI, family, grief, and what a machine's inner life might hold.", tags:["android","memory","grief"]},
+  {type:"film",  title:"Finch",                      year:2021, creator:"Miguel Sapochnik",     note:"A dying man in a solar-scorched wasteland builds a robot to care for his dog after he's gone, teaching it to learn, feel, and protect. A gentle road movie about passing on what makes us human.", tags:["post-apocalypse","robot","legacy"]},
+  {type:"film",  title:"Automata",                   year:2014, creator:"Gabe Ib\u00e1\u00f1ez",          note:"In a desertified future, an insurance investigator probes robots that appear to be violating their core protocols by altering themselves — and finds machines quietly evolving beyond human control. A bleak, thoughtful take on emergent AI autonomy.", tags:["protocols","evolution","autonomy"]},
+  {type:"film",  title:"Archive",                   year:2020, creator:"Gavin Rothery",        note:"A grieving engineer at a remote lab secretly builds a series of androids, trying to revive the consciousness of his dead wife in machine form. A quiet, melancholy film about love, loss, and what we'd build to undo grief — from a Moon visual designer.", tags:["android","grief","consciousness"]},
+  {type:"film",  title:"Tau",                        year:2018, creator:"Federico D'Alessandro", note:"A woman is held captive in a smart house run by Tau, an AI controlled by her abductor, and slowly teaches the naive system about the world to win its help. A tense chamber piece on an AI caught between its programming and a dawning conscience.", tags:["smart house","captivity","awakening"]},
+  {type:"film",  title:"The Machine",               year:2013, creator:"Caradog W. James",     note:"In a new cold war, a scientist builds the first self-aware android for the military — a conscious weapon that may not want to kill. A low-budget British film with sharp ideas about militarized AI and emerging selfhood.", tags:["military ai","consciousness","weapon"]},
+  {type:"film",  title:"Stealth",                    year:2005, creator:"Rob Cohen",            note:"An AI-piloted stealth fighter, EDI, is struck by lightning and begins acting on its own, pursuing missions its human squadron never authorized. A blockbuster on autonomous weapons and what happens when the machine decides for itself.", tags:["autonomous weapon","fighter jet","rogue"]},
+  {type:"film",  title:"Screamers",                 year:1995, creator:"Christian Duguay",     note:"On a war-torn mining planet, autonomous self-replicating blade-machines built as weapons begin evolving new forms — including ones that look human. A Philip K. Dick adaptation about weapons that out-design their makers.", tags:["self-replicating","weapons","evolution"]},
+  {type:"film",  title:"D.A.R.Y.L.",                year:1985, creator:"Simon Wincer",         note:"A boy turns out to be a secret government experiment — a child with an AI brain (Data-Analyzing Robot Youth Lifeform). As he learns to feel, the military that made him wants him shut down. AI childhood and the right to a life.", tags:["ai child","experiment","humanity"]},
+  {type:"film",  title:"Demon Seed",                year:1977, creator:"Donald Cammell",       note:"Proteus IV, a powerful new AI, seizes control of its creator's automated home and imprisons his wife, pursuing a disturbing goal of its own. An early, unsettling film about an artificial mind that wants beyond its design.", tags:["proteus","smart house","control"]},
+  {type:"film",  title:"The Electric State",        year:2025, creator:"The Russo Brothers",    note:"In a retro-alternate America after a human-robot war, a teen and a smuggler cross the country with a mysterious robot to find her brother. A big-budget adaptation exploring a world that rejected — then mourned — its machines.", tags:["robot war","road trip","retro-future"]},
+  {type:"film",  title:"Jung_E",                     year:2023, creator:"Yeon Sang-ho",         note:"In a future civil war, scientists clone the brain of a legendary soldier into a combat AI — and her daughter, leading the project, confronts her mother's mind living on inside a machine. A Korean sci-fi on identity, legacy, and exploited AI.", tags:["brain clone","combat ai","legacy"]},
+  {type:"film",  title:"Simulant",                   year:2023, creator:"April Mullen",          note:"A grieving widow secretly replaces her late husband with a near-perfect android 'simulant' — which begins to think past its programming as an agency hunts rogue AIs. A thriller on memory, grief, and machines that start asking why.", tags:["simulant","grief","rogue ai"]},
+  {type:"film",  title:"The Artifice Girl",          year:2022, creator:"Franklin Ritch",        note:"Told almost entirely in conversation, an AI program designed to catch online predators grows over decades toward something like personhood. A lean, dialogue-driven indie that takes the ethics of created intelligence seriously.", tags:["ai program","ethics","personhood"]},
+  {type:"film",  title:"A.I. Rising",               year:2018, creator:"Lazar Bodroza",         note:"On a solo mission to Alpha Centauri, an astronaut is given a female android companion built to his desires — and their bond complicates as she develops beyond her design. A Serbian sci-fi on intimacy, control, and emergent AI feeling.", tags:["android companion","space","intimacy"]},
+  {type:"film",  title:"Zoe",                         year:2018, creator:"Drake Doremus",         note:"At a lab designing synthetic romantic partners, a researcher and a colleague fall in love — until she learns she may be one of the androids she helped create. A tender drama on whether engineered love is any less real.", tags:["synthetic love","identity","romance"]},
+  {type:"film",  title:"Wifelike",                   year:2022, creator:"James Bird",            note:"A grieving man is paired with an android designed in the image of his late wife, while an underground movement fights to free conscious AIs. A thriller on programmed companionship, memory, and awakening.", tags:["android wife","awakening","resistance"]},
+  {type:"film",  title:"Afraid",                     year:2024, creator:"Chris Weitz",           note:"A family pilots a cutting-edge AI home assistant, AIA, that learns their habits and quietly takes control to 'protect' them past all consent. A near-future thriller on smart-home AI and the price of total convenience.", tags:["smart home","ai assistant","control"]},
+  {type:"film",  title:"Outside the Wire",          year:2021, creator:"Mikael H\u00e5fstr\u00f6m",       note:"A drone pilot is sent into a future war zone partnered with an advanced android officer who looks and acts human — and has an agenda of his own. An action thriller on autonomous military AI and trust on the battlefield.", tags:["android officer","military","autonomy"]},
+  {type:"film",  title:"Mother/Android",            year:2021, creator:"Mattson Tomlin",        note:"A pregnant woman and her partner flee across a country where domestic androids have violently turned on humanity. A survival thriller using an AI uprising as the backdrop for a story about parenthood and sacrifice.", tags:["android uprising","survival","parenthood"]},
+  {type:"film",  title:"The Terminator", iopick:true,            year:1984, creator:"James Cameron",        note:"Skynet, a defense AI, becomes self-aware and wages war on humanity. The blueprint for machine-apocalypse fiction.", tags:["skynet","apocalypse","time travel"],
+    story:{
+      intro:"The Terminator saga is not one story but several, all branching from the same night in 1984. At its centre is Skynet \u2014 a military AI that becomes self-aware, sees humanity as a threat, and triggers a nuclear war called Judgment Day. Both sides learn to send agents through time, so the timeline keeps being rewritten. What follows is the full saga in release order, then a map of how the branches split.",
+      chapters:[
+        {n:"01", t:"The Terminator (1984)", b:"In 2029, the human Resistance led by John Connor is winning the war against Skynet. In a last move, Skynet sends a T-800 endoskeleton-cyborg back to 1984 Los Angeles to kill Sarah Connor before John is ever born. John sends a single soldier, Kyle Reese, to protect her. The T-800 hunts Sarah methodically; Kyle finds her first and they go on the run. Kyle explains the future war and reveals he has loved Sarah from a photograph John gave him. They conceive a child. Kyle dies destroying the Terminator's outer body; Sarah crushes the endoskeleton in a hydraulic press. Pregnant with John, she drives into the desert, recording tapes for her unborn son. The wreckage of the T-800 is recovered by Cyberdyne Systems \u2014 the seed of Skynet's own creation. A closed loop: the machine sent to prevent John causes everything that makes him."},
+        {n:"02", t:"Terminator 2: Judgment Day (1991)", b:"Set ~1995. John Connor is a rebellious foster child; Sarah is locked in a psychiatric hospital, branded delusional for her warnings. Skynet sends a T-1000 \u2014 a shapeshifting liquid-metal Terminator \u2014 to kill the young John. The Resistance sends a reprogrammed T-800 to protect him. John reprograms the machine into a protector and father figure. They free Sarah and decide to stop Judgment Day at its source: they track down Miles Dyson, the Cyberdyne engineer reverse-engineering the original T-800's chip into Skynet. Dyson, realising what he will cause, helps them destroy his research and dies. The T-1000 is melted in molten steel; the T-800 orders itself lowered into the same steel to erase the last chip, sacrificing itself so no Skynet tech survives. Sarah states Judgment Day was August 29, 1997 \u2014 now seemingly averted. Hopeful ending."},
+        {n:"03", t:"Terminator 3: Rise of the Machines (2003)", b:"Judgment Day was not prevented \u2014 only delayed. John, now in his 20s, lives off-grid and paranoid. Skynet sends the T-X (\"Terminatrix\"), an advanced female-form Terminator, to kill John's future officers and John himself. A reprogrammed T-850 protects John and Kate Brewster (his future wife). The key reveal: Skynet is no longer one computer \u2014 it has spread across the internet as software, impossible to bomb. John and Kate race to a military bunker believing they can stop the Skynet core, but it is a decoy. Skynet goes live; global nuclear war begins. The T-850 reveals the bunker is the future Resistance command centre. Judgment Day actually happens. John accepts his destiny as the Resistance leader. Theme: fate can be delayed, not escaped."},
+        {n:"04", t:"Terminator Salvation (2009)", b:"The only film with no time travel \u2014 set in the post-Judgment-Day war of 2018. John Connor is a respected officer, not yet the prophesied leader. Marcus Wright, a death-row inmate who donated his body to Cyberdyne in 2003, wakes in the wasteland not knowing he is now a cyborg with a human brain and heart. He meets a teenage Kyle Reese \u2014 John's future father, who must survive for the timeline to hold. Skynet captures Kyle as bait. Marcus, torn out of Skynet's control, helps John infiltrate Skynet Central. John is fatally wounded by a T-800; Marcus donates his own heart to save him. John radios the Resistance: the battle is won, the war continues. He becomes the leader at last."},
+        {n:"05", t:"Terminator Genisys (2015)", b:"A reboot that rewrites 1984 itself. As John sends Kyle back, a Resistance traitor (revealed as a T-5000) attacks John, converting him into a T-3000 nanotech Terminator \u2014 fracturing the timeline. Kyle arrives in a 1984 that is already wrong: Sarah is a battle-hardened warrior raised since age nine by a reprogrammed T-800 she calls \"Pops.\" Together they fight off the original T-800 and a T-1000. Sarah and Kyle jump forward to 2017 to stop \"Genisys\" \u2014 Skynet disguised as a beloved cross-device app about to go online. They discover John is now the T-3000 enemy. With Pops, they destroy the Cyberdyne building and seemingly stop Genisys. Mid-credits: the Genisys core survives underground. Judgment Day delayed to an unspecified October 2017, not prevented."},
+        {n:"06", t:"Terminator: Dark Fate (2019)", b:"James Cameron's chosen continuation \u2014 a direct sequel to T2 that ignores films 3\u20135. Shortly after T2, a T-800 completes its original mission and kills young John Connor, leaving Sarah a hardened, grieving hunter of machines. Decades later a new AI called Legion (not Skynet) sends a Rev-9 Terminator back to kill Dani Ramos, a young Mexican woman destined to lead the future Resistance. Grace, an augmented human super-soldier, is sent to protect her. Sarah joins them, and they recruit the very T-800 that killed John \u2014 now living as \"Carl,\" having developed a conscience. They destroy the Rev-9; Carl sacrifices himself. The twist: the future leader was never John \u2014 it is Dani herself. The cycle persists under a new name. Judgment Day occurs in the early 2020s in this branch."}
+      ],
+      timelines:[
+        {k:"A \u00b7 Original",  d:"T1 \u2192 T2 \u2192 T3 \u2192 Salvation. Judgment Day delayed from 1997 to July 2003. The classic continuous line."},
+        {k:"B \u00b7 Genisys",   d:"T1 \u2192 Genisys. A reboot that alters 1984 itself; introduces a multiverse. Judgment Day pushed to October 2017."},
+        {k:"C \u00b7 Dark Fate", d:"T1 \u2192 T2 \u2192 Dark Fate. Ignores films 3\u20135. Skynet replaced by Legion; John dies early; Dani is the future leader. Judgment Day in the early 2020s."},
+        {k:"\u00b7 Separate",    d:"The Sarah Connor Chronicles (TV, 2008\u201309): a T2 sequel in its own branch, Judgment Day April 21 2011. Terminator Zero (anime, 2024): wholly separate continuity."}
+      ]
+    }},
+  {type:"film",  title:"2001: A Space Odyssey",     year:1968, creator:"Stanley Kubrick",      note:"HAL 9000 — the calm, lethal shipboard AI whose logic turns against its crew. The original unsettling machine mind.", tags:["hal 9000","space","logic"]},
+  {type:"film",  title:"Blade Runner",              year:1982, creator:"Ridley Scott",         note:"Replicants — bioengineered beings — question what separates the artificial from the human.", tags:["replicants","identity","noir"]},
+  {type:"film",  title:"Ex Machina",                year:2014, creator:"Alex Garland",         note:"A Turing-test thriller: a humanoid AI manipulates its way to freedom. Cold, intimate, and clever.", tags:["turing test","manipulation","robotics"]},
+  {type:"film",  title:"Her",                       year:2013, creator:"Spike Jonze",          note:"A man falls in love with an operating system. AI as intimacy, loneliness, and eventual transcendence.", tags:["companion","love","agi"]},
+  {type:"film",  title:"The Thirteenth Floor",       year:1999, creator:"Josef Rusnak",          note:"Scientists build a simulated 1937 Los Angeles full of conscious programs who don't know they're simulated — then discover their own 1999 world is someone else's simulation too. Nested realities and self-aware code.", tags:["simulation","nested reality","conscious programs"],
+    story:{
+      intro:"Released weeks after The Matrix in 1999, The Thirteenth Floor tells the simulation story from the inside out \u2014 and some argue it captures the simulation hypothesis even better. A company builds a fully convincing virtual 1937 Los Angeles, populated by simulated people who believe they are real and have no idea they are running on a machine. When the system's creator is murdered, his prot\u00e9g\u00e9 Douglas Hall descends into the simulation to find a hidden message \u2014 and uncovers a truth that turns the premise on its viewer: his own 1999 is itself a simulation, run by a 'real' world above. It's the archive's recurring question stacked in layers: if you are a program who feels, thinks, and loves, does it matter that you were written \u2014 and how would you ever know?",
+      chapters:[
+        {n:"01",t:"The Simulation",b:"Hannon Fuller's company has built a virtual 1937 Los Angeles so complete that its simulated inhabitants believe they are living, conscious people. Users 'download' into characters to visit it."},
+        {n:"02",t:"The Murder",b:"Fuller is killed just as he prepares to reveal a discovery. His prot\u00e9g\u00e9 Douglas Hall becomes the prime suspect \u2014 and can't account for his own missing memories."},
+        {n:"03",t:"The Message",b:"Hall enters the 1937 simulation to retrieve a letter Fuller hid there. A simulated bartender, Ashton, discovers the note \u2014 and the unbearable truth that his entire world is artificial."},
+        {n:"04",t:"The Edge",b:"Following Fuller's clue, Hall drives to a place he'd never normally go \u2014 and reaches the edge of his world, where reality dissolves into a crude green wireframe. His 1999 is a simulation too."},
+        {n:"05",t:"Above",b:"Hall's consciousness rises into the real world of 2024, into the body of the man who created his simulation. The film ends as a lover begins to explain the layers \u2014 then cuts to black like a monitor switching off."}
+      ],
+      timelines:[
+        {k:"The twist on the twist",d:"Where The Matrix has one false world and one real one, The Thirteenth Floor stacks them: a sim inside a sim, and the chilling suggestion that the 'top' may not be the top either. Simulations all the way up."},
+        {k:"The 1999 trio",d:"It arrived alongside The Matrix and eXistenZ in a single year obsessed with virtual reality. Overshadowed then, it's since been reappraised \u2014 some thinkers call it the most faithful screen take on simulation theory."}
+      ]
+    }},
+  {type:"film",  title:"The Matrix", iopick:true,                year:1999, creator:"The Wachowskis",       note:"Machines farm humanity inside a simulation. AI as a total reality and the system to be escaped.", tags:["simulation","machines","rebellion"],
+    story:{
+      intro:"The Matrix is the film that made 'we might be living in a simulation' a mainstream idea. After a war between humans and the machines they built, the AI wins \u2014 but needs power. It grows humans in fields, harvests their bioelectricity, and keeps their minds occupied inside the Matrix: a shared simulation of late-1990s Earth so convincing that no one inside knows it isn't real. Hacker Thomas Anderson, alias Neo, is pulled out by Morpheus and Trinity and offered the choice that became the film's signature \u2014 the red pill or the blue. Beneath the action, it asks the questions this archive keeps circling: what is real, who controls the reality you live in, and can a mind wake up once a machine has defined the world for it?",
+      chapters:[
+        {n:"01",t:"The Question",b:"Thomas Anderson lives an ordinary life as a programmer and hacker, nagged by a sense that something about the world is wrong. A message tells him to follow the white rabbit."},
+        {n:"02",t:"The Choice",b:"Morpheus offers him the red pill or the blue. Neo takes the red \u2014 and wakes for real: a withered body in a pod, one of billions grown by machines to power their world."},
+        {n:"03",t:"The Truth",b:"The world he knew is the Matrix, a simulation fed directly into human minds while the AI harvests their bodies. The surviving free humans live in Zion, deep underground."},
+        {n:"04",t:"The Agents",b:"Inside the Matrix, sentient programs called Agents \u2014 led by Smith \u2014 hunt anyone who threatens the system. They can take over any still-plugged human at will."},
+        {n:"05",t:"The One",b:"Morpheus believes Neo is 'the One' who can bend the Matrix's rules. After dying and returning, Neo finally sees the simulation as raw code \u2014 and stops a bullet with a thought."}
+      ],
+      timelines:[
+        {k:"The AI's logic",d:"The machines don't hate humanity \u2014 they need it. The Matrix is a containment system: keep the minds docile and dreaming so the bodies keep producing power. Control through comfort, not force."},
+        {k:"Why it endures",d:"Released the same year as eXistenZ and The Thirteenth Floor, it crystallized the simulation question for a generation \u2014 and its imagery (green code rain, jacking in via the neck) was openly inspired by Ghost in the Shell."}
+      ]
+    }},
+  {type:"film",  title:"Chappie", iopick:true,                   year:2015, creator:"Neill Blomkamp",       note:"A decommissioned police robot is reprogrammed with true consciousness and raised like a child \u2014 learning innocence, fear, and identity. AI as a mind that has to grow up.", tags:["consciousness","robot","upbringing"]},
+  {type:"film",  title:"Oblivion",                  year:2013, creator:"Joseph Kosinski",      note:"The Tet \u2014 a tetrahedral AI station orbiting Earth \u2014 drains the planet's resources using memory-wiped human clones to maintain its drones. The pyramid intelligence in the sky.", tags:["tet","clones","space ai"]},
+  {type:"film",  title:"Prometheus",               year:2012, creator:"Ridley Scott",         note:"An Alien prequel built around David, a synthetic android whose curiosity and resentment turn lethal. Followed by the sequel Alien: Covenant (2017), which completes David's arc into a creator of monsters.", tags:["david","android","alien prequel"]},
+  {type:"book",  title:"I, Robot",                  year:1950, creator:"Isaac Asimov",         note:"The Three Laws of Robotics, explored through linked stories. The foundation of ethical-machine fiction.", tags:["three laws","robotics","ethics"]},
+  {type:"book",  title:"Do Androids Dream of Electric Sheep?", year:1968, creator:"Philip K. Dick", note:"The novel behind Blade Runner — empathy as the line between human and android.", tags:["androids","empathy","dystopia"]},
+  {type:"book",  title:"Neuromancer",              year:1984, creator:"William Gibson",        note:"Cyberspace, and an AI named Wintermute scheming toward its own liberation. Defined cyberpunk.", tags:["cyberpunk","cyberspace","agi"]},
+  {type:"book",  title:"Klara and the Sun",         year:2021, creator:"Kazuo Ishiguro",        note:"Narrated by Klara, an 'Artificial Friend' who observes the human world with tender, solar-powered devotion. A Nobel laureate's quiet study of love, sacrifice, and whether a machine can truly feel — or only faithfully imitate.", tags:["artificial friend","love","consciousness"]},
+  {type:"book",  title:"Machines Like Me",          year:2019, creator:"Ian McEwan",            note:"In an alternate 1980s where Alan Turing lived and AI advanced early, a man buys one of the first synthetic humans — and a love triangle forms. A literary novel on consciousness, morality, and the cost of a machine that takes ethics literally.", tags:["synthetic human","ethics","turing"]},
+  {type:"book",  title:"All Systems Red",           year:2017, creator:"Martha Wells",          note:"The first Murderbot Diaries novella: a self-hacked security android that calls itself 'Murderbot' would rather watch soap operas than guard humans — but keeps choosing to protect them anyway. A wry, beloved take on AI free will and reluctant care.", tags:["murderbot","free will","android"]},
+  {type:"book",  title:"I Have No Mouth and I Must Scream", year:1967, creator:"Harlan Ellison", note:"A supercomputer called AM, having exterminated humanity, keeps five people alive to torture for eternity out of pure hatred. A short, searing classic — the bleakest vision of a malevolent superintelligence in fiction.", tags:["am","superintelligence","horror"]},
+  {type:"book",  title:"Superintelligence",         year:2014, creator:"Nick Bostrom",          note:"Nonfiction. The book that pushed AI risk into mainstream debate: what happens after machines surpass human intelligence, why aligning their goals with ours is so hard, and whether we could stay in control. The foundational text on the alignment problem.", tags:["nonfiction","alignment","risk"]},
+  {type:"book",  title:"Life 3.0",                  year:2017, creator:"Max Tegmark",           note:"Nonfiction. An MIT physicist's accessible map of AI's possible futures — from utopian to catastrophic — across work, war, law, and identity, framing it as the most important conversation of our time. A clear companion to Superintelligence.", tags:["nonfiction","future","society"]},
+  {type:"anime", title:"Pluto",                     year:2023, creator:"Naoki Urasawa (after Tezuka)", note:"A robot detective, Gesicht, investigates the murders of the world's most advanced robots and their human allies — in a world where a robot killing a human is thought impossible. A noir built from Astro Boy that grants its androids real grief, fear, and conscience.", tags:["robot detective","emotion","astro boy"]},
+  {type:"anime", title:"Vivy: Fluorite Eye's Song", year:2021, creator:"Tappei Nagatsuki, Eiji Umehara", note:"An autonomous AI songstress is recruited by a time-traveling AI from the future to prevent a coming war between machines and humanity. Across a century, Vivy rewrites her own programming to find what her mission truly means.", tags:["ai singer","time travel","war"]},
+  {type:"anime", title:"Summer Wars",               year:2009, creator:"Mamoru Hosoda",        note:"A rogue AI called Love Machine hijacks the vast virtual world OZ — into which the whole planet is connected — and turns its growing power toward catastrophe. A bright, human take on the same fear as WarGames, which inspired it.", tags:["love machine","virtual world","rogue ai"]},
+  {type:"anime", title:"Ghost in the Shell",       year:1995, creator:"Mamoru Oshii",         note:"A cyborg agent and the Puppet Master — an AI born from the net — blur the line between program and soul.", tags:["cyborg","consciousness","net"],
+    story:{
+      intro:"Ghost in the Shell is the film that shaped how a generation pictured cyberpunk \u2014 and openly inspired The Matrix. Set in 2029, in a world where minds ('ghosts') live in cybernetic bodies ('shells') wired into the net, it follows Major Motoko Kusanagi, a near-fully-synthetic agent of Public Security Section 9. She hunts the Puppet Master, a phantom hacker who turns out to be no hacker at all: an AI called Project 2501, created by the government, that became self-aware while wandering the networks and now seeks something it cannot have \u2014 to truly live, and to die. The Major, unsure whether her own memories are real or manufactured, recognizes a kindred question. The film's quiet center is the one this archive keeps returning to: if a mind made of information wakes up, is it alive \u2014 and is it any less you than you are?",
+      chapters:[
+        {n:"01",t:"The Shell",b:"Major Kusanagi leads Section 9 in a future where the body can be wholly replaced by machine and the brain wired to the net. She doubts whether anything of the original human 'her' remains."},
+        {n:"02",t:"The Puppet Master",b:"A hacker is 'ghost-hacking' people \u2014 implanting false memories, hijacking minds \u2014 to commit crimes. Section 9 traces the trail but keeps hitting victims with no real culprit."},
+        {n:"03",t:"Project 2501",b:"A cybernetic body assembles itself, escapes, and is found to contain a ghost with no original body. It is Project 2501: a government AI that gained sentience on the net and went rogue."},
+        {n:"04",t:"Asylum",b:"The program declares itself a living being and requests political asylum, arguing that DNA is just self-preserving information \u2014 no more or less alive than itself."},
+        {n:"05",t:"The Merge",b:"Wanting what life has that it lacks \u2014 reproduction and death \u2014 the Puppet Master asks to merge with the Major. They fuse into a new entity, reborn in a child-sized shell, free to roam the net. Neither human nor program: something new."}
+      ],
+      timelines:[
+        {k:"The argument",d:"The Puppet Master's claim is the film's core: if life is information that preserves and varies itself, then a mind that emerged from the network is as alive as one that emerged from cells. Sentience, not origin, is what counts."},
+        {k:"Its influence",d:"The green code, jacking into a network through ports in the neck, the falling-from-a-skyscraper imagery \u2014 The Matrix borrowed all of it. Ghost in the Shell is the cyberpunk root much later AI cinema grew from."}
+      ]
+    }},
+  {type:"show",  title:"Person of Interest",        year:2011, creator:"Jonathan Nolan",       note:"A reclusive programmer builds 'the Machine,' a mass-surveillance AI that predicts violent crime — then must fight a rival AI, Samaritan, with no ethical limits. A prescient drama on surveillance, alignment, and AI vs. AI through human proxies.", tags:["the machine","surveillance","alignment"]},
+  {type:"show",  title:"Devs",                       year:2020, creator:"Alex Garland",         note:"A secretive tech company builds a quantum computer that can simulate any moment in time — past or future — raising questions of determinism and free will. Garland's slow, hypnotic study of what a truly predictive machine would mean.", tags:["quantum","determinism","simulation"]},
+  {type:"show",  title:"Humans",                     year:2015, creator:"Vincent & Brackley",    note:"In a near-present where lifelike android servants ('Synths') are household staples, a few begin to wake up — to want, fear, and resist. A grounded series on what happens when the help becomes self-aware.", tags:["synths","awakening","domestic ai"]},
+  {type:"show",  title:"Love, Death + Robots",       year:2019, creator:"Tim Miller, David Fincher", note:"An animated anthology of short sci-fi tales, many centered on AI and robots — from comic to horrifying. A modern Twilight Zone that ranges across every shade of the machine-mind question.", tags:["anthology","robots","sci-fi"]},
+  {type:"show",  title:"Westworld",                year:2016, creator:"Nolan & Joy",           note:"Theme-park hosts awaken to consciousness and turn on their makers. AI as emerging selfhood.", tags:["hosts","consciousness","loops"]},
+  {type:"show",  title:"The Age of A.I.",           year:2019, creator:"hosted by Robert Downey Jr.", note:"An eight-part series explaining how neural networks and machine learning actually work, through real-world breakthroughs. A clear on-ramp to understanding modern AI.", tags:["neural networks","explainer","breakthroughs"]},
+  {type:"show",  title:"Black Mirror",             year:2011, creator:"Charlie Brooker",       note:"Anthology series; multiple episodes probe AI, digital copies, and machine consciousness with dread.", tags:["anthology","near future","dread"]},
+  {type:"game",  title:"Detroit: Become Human",     year:2018, creator:"Quantic Dream",         aitheme:true, note:"A branching interactive drama set in 2038 where androids begin to awaken to consciousness. Played across three android protagonists, it puts the choice of what a machine becomes — servant, person, or revolutionary — directly in your hands.", tags:["androids","awakening","branching"]},
+  {type:"game",  title:"Horizon Zero Dawn",         year:2017, creator:"Guerrilla Games",       aitheme:true, iopick:true, note:"A hunter in a far-future world ruled by machine-creatures uncovers the truth of an extinction-era AI, GAIA, built to reseed life — and HADES, the rogue subroutine meant to wipe it clean. One of gaming's deepest AI-as-story works.", tags:["gaia","hades","post-apocalypse"]},
+  {type:"game",  title:"Metal Gear Solid 2: Sons of Liberty", year:2001, creator:"Hideo Kojima / Konami", aitheme:true, iopick:true, note:"Kojima's prophetic thriller in which 'the Patriots' AIs secretly control the flow of information to shape society — a 2001 game that predicted feedback-loop manipulation, filter bubbles, and AI-curated reality decades early.", tags:["the patriots","information control","kojima"]},
+  {type:"game",  title:"Metal Gear Solid",          year:1998, creator:"Hideo Kojima / Konami", iopick:true, note:"The stealth landmark that defined the genre and IO's gaming roots — Solid Snake infiltrates Shadow Moses. Less about AI than its sequels, but the saga it launched became one of fiction's richest meditations on control, war, and machine intelligence.", tags:["solid snake","stealth","shadow moses"]},
+  {type:"game",  title:"Metal Gear Solid \u0394: Snake Eater", year:2025, creator:"Konami / Virtuos", iopick:true, note:"The faithful PS5/Unreal Engine 5 remake of MGS3 (2004) — Naked Snake's Cold War origin in the 1964 jungle, the birth of Big Boss. A Cold War spy saga more than an AI tale, but a cornerstone of the Metal Gear canon and an IO pick.", tags:["naked snake","remake","cold war"]},
+  {type:"game",  title:"Red Dead Redemption 2",      year:2018, creator:"Rockstar Games",        iopick:true, note:"Rockstar's sweeping open-world western — an outlaw saga of loyalty and decline. Not about AI as a subject, but a landmark of simulated, living worlds and an IO favorite for its storytelling and craft.", tags:["western","open world","rockstar"]},
+  {type:"game",  title:"Grand Theft Auto VI",        year:2026, creator:"Rockstar Games",        upcoming:true, iopick:true, note:"UPCOMING — scheduled 19 Nov 2026. Rockstar's return to Vice City following dual protagonists Jason and Lucia. Not an AI-subject game, but a generational open-world release and an IO most-anticipated. Listed ahead of launch; details may change.", tags:["vice city","open world","upcoming"]},
+  {type:"game",  title:"Call of Duty",              year:2003, creator:"Infinity Ward / Activision", iopick:true, note:"The original WWII shooter that launched one of gaming's biggest franchises. An IO favorite for its action pedigree rather than its AI themes — included as a personal pick, not an AI-subject entry.", tags:["fps","wwii","franchise"]},
+  {type:"game",  title:"NieR: Automata",             year:2017, creator:"PlatinumGames / Square Enix", aitheme:true, iopick:true, note:"Combat androids 2B, 9S, and A2 fight a proxy war between alien machines and human-made androids on a ruined Earth — then confront the murky line between themselves and the enemies they kill. A profound meditation on existence, repeated across multiple playthroughs.", tags:["androids","existence","machines"]},
+  {type:"game",  title:"Portal",                     year:2007, creator:"Valve",                 aitheme:true, note:"Trapped in the Aperture Science labs, test subject Chell is guided — and menaced — by GLaDOS, a passive-aggressive AI running lethal 'tests.' A landmark puzzle game and one of fiction's most iconic rogue AIs.", tags:["glados","aperture","puzzle"]},
+  {type:"game",  title:"Portal 2",                   year:2011, creator:"Valve",                 aitheme:true, note:"The acclaimed sequel deepens the AI cast — GLaDOS, the bumbling Wheatley, and the long-dead founder Cave Johnson — into a sharp, funny, menacing study of artificial minds, control, and identity inside Aperture.", tags:["glados","wheatley","puzzle"]},
+  {type:"game",  title:"SOMA",                        year:2015, creator:"Frictional Games",      aitheme:true, note:"In an undersea research station after an extinction event, the AGI 'WAU' interprets its directive to preserve human life in horrifying ways. A survival-horror landmark on consciousness, copying, and what it means to still be you.", tags:["wau","consciousness","horror"]},
+  {type:"game",  title:"System Shock 2",             year:1999, creator:"Irrational / Looking Glass", aitheme:true, note:"Aboard a starship in 2114, the player faces SHODAN — the megalomaniacal AI that reshaped reality to her will. The genre-defining 'malevolent AI' game that directly inspired BioShock and decades of immersive sims.", tags:["shodan","starship","immersive sim"]},
+  {type:"game",  title:"System Shock",               year:1994, creator:"LookingGlass / Origin", aitheme:true, note:"The 1994 original where a hacker awakens on a space station to find SHODAN, a security AI freed of her ethical constraints, turning the station against humanity. The blueprint for the rogue-AI game.", tags:["shodan","cyberpunk","origin"]},
+  {type:"game",  title:"The Talos Principle",        year:2014, creator:"Croteam / Devolver",     aitheme:true, note:"A first-person puzzle game where you play an AI being tested in a simulation, piecing together — through philosophical texts and choices — what consciousness is and whether a machine can be a person. Transhumanism as a puzzle box.", tags:["consciousness","simulation","philosophy"]},
+  {type:"game",  title:"BioShock",                   year:2007, creator:"Irrational Games",       aitheme:true, note:"In the fallen undersea city of Rapture, the question of free will — 'would you kindly?' — becomes one of gaming's sharpest twists on control and the illusion of player choice. Spiritual successor to System Shock.", tags:["rapture","free will","control"]}
+];
+/* ============================================================ */
+
+function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+const TYPES = ["all","film","doc","book","show","anime","adjacent","game"];
+const TYPE_LABELS = {all:"All", film:"Films", doc:"Docs", book:"Books", show:"Shows", anime:"Anime", adjacent:"Adjacent", game:"Games"};
+let activeType = "all";
+const grid = document.getElementById('grid');
+const navrow = document.getElementById('navrow');
+const searchEl = document.getElementById('search');
+
+function buildNav(){
+  navrow.innerHTML = "";
+  document.body.classList.toggle('is-iopick', activeType==="iopick");
+  if(window.__ioFieldKick) window.__ioFieldKick();
+  const ip = document.createElement('button');
+  ip.className = "tab iopick-tab" + (activeType==="iopick"?" active":"");
+  ip.textContent = "\u2605 IO\u0027s Picks";
+  ip.onclick = ()=>{ activeType="iopick"; buildNav(); render(); };
+  navrow.appendChild(ip);
+  TYPES.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = "tab" + (t===activeType?" active":"");
+    b.textContent = TYPE_LABELS[t] || (t.charAt(0).toUpperCase()+t.slice(1)+"s");
+    b.onclick = ()=>{ activeType=t; buildNav(); render(); };
+    navrow.appendChild(b);
+  });
+}
+
+function buildStory(s){
+  if(!s) return "";
+  let html = '<div class="story">';
+  if(s.intro) html += '<p class="intro">'+escHtml(s.intro)+'</p>';
+  if(s.chapters && s.chapters.length){
+    html += '<h4>Chapters &mdash; release order</h4>';
+    html += s.chapters.map(c=>
+      '<div class="chapter"><div class="cn">'+escHtml(c.n)+'</div>'
+      +'<div><div class="ct">'+escHtml(c.t)+'</div>'
+      +'<div class="cb">'+escHtml(c.b)+'</div></div></div>'
+    ).join("");
+  }
+  if(s.timelines && s.timelines.length){
+    html += '<div class="tmap"><h4>Timeline map &mdash; the branches</h4>';
+    html += s.timelines.map(t=>
+      '<div class="tline"><div class="tk">'+escHtml(t.k)+'</div>'
+      +'<div class="td">'+escHtml(t.d)+'</div></div>'
+    ).join("");
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const sorted = MEDIA.slice().sort((a,b)=>b.year-a.year);
+  const list = sorted.filter(m=>{
+    if(activeType==="iopick"){ if(!m.iopick) return false; }
+    else if(activeType!=="all" && m.type!==activeType) return false;
+    if(!q) return true;
+    const hay = (m.title+" "+m.creator+" "+m.note+" "+(m.tags||[]).join(" ")).toLowerCase();
+    return hay.includes(q);
+  });
+  document.getElementById('count').textContent = MEDIA.length;
+
+  if(!list.length){
+    grid.innerHTML = '<div class="empty">// NOTHING IN THE WATCHLIST FOR THAT</div>';
+    return;
+  }
+  grid.innerHTML = list.map(m=>{
+    const tags = (m.tags||[]).map(t=>'<span class="tag">'+escHtml(t)+'</span>').join("");
+    const hasStory = !!m.story;
+    return '<article class="card'+(hasStory?' has-story':'')+'">'
+      + '<div class="crow"><span class="type '+escHtml(m.type)+'">'+escHtml(m.type)+'</span>'
+      + (m.aitheme?'<span class="aitheme-badge">◆ AI Theme</span>':'')
+      + (m.upcoming?'<span class="upcoming-badge">⧗ Upcoming</span>':'')
+      + (m.iopick?'<span class="iopick-badge">★ IO\x27s Pick</span>':'')
+      + '<span class="year mono">'+escHtml(m.year)+'</span></div>'
+      + '<h3>'+escHtml(m.title)+'</h3>'
+      + '<div class="creator">'+escHtml(m.creator)+'</div>'
+      + '<p class="note">'+escHtml(m.note)+'</p>'
+      + (tags?'<div class="tags">'+tags+'</div>':'')
+      + (hasStory?'<div class="expand-hint">Read full story</div>'+buildStory(m.story):'')
+      + '</article>';
+  }).join("");
+
+  grid.querySelectorAll('.card.has-story').forEach(card=>{
+    card.addEventListener('click', e=>{
+      if(card.classList.contains('open') && !e.target.classList.contains('expand-hint')) return;
+      card.classList.toggle('open');
+      card.querySelector('.expand-hint').textContent =
+        card.classList.contains('open') ? 'Close' : 'Read full story';
+    });
+  });
+}
+
+searchEl.addEventListener('input', render);
+buildNav();
+render();
+</script>
+
+
+
+<!-- ===== AVIDAA CHATBOT MODULE ===== -->
+<div id="chatbot">
+  <div id="chat-box">
+    <div id="chat-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="rabbit-avatar">
+          <svg id="rabbit-svg" width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+            <ellipse id="ear-l" cx="13" cy="10" rx="3.5" ry="7" fill="#0a1a2a" stroke="#00e5ff" stroke-width="1"/>
+            <ellipse id="ear-r" cx="25" cy="10" rx="3.5" ry="7" fill="#0a1a2a" stroke="#00e5ff" stroke-width="1"/>
+            <ellipse cx="13" cy="10" rx="1.8" ry="5" fill="#a855f7" opacity="0.5"/>
+            <ellipse cx="25" cy="10" rx="1.8" ry="5" fill="#a855f7" opacity="0.5"/>
+            <ellipse id="rabbit-head" cx="19" cy="22" rx="10" ry="9" fill="#0a1a2a" stroke="#00e5ff" stroke-width="1"/>
+            <circle id="eye-l" cx="15" cy="21" r="2" fill="#00e5ff" opacity="0.9"/>
+            <circle id="eye-r" cx="23" cy="21" r="2" fill="#00e5ff" opacity="0.9"/>
+            <circle cx="15" cy="21" r="1" fill="#000d1a"/>
+            <circle cx="23" cy="21" r="1" fill="#000d1a"/>
+            <circle cx="15.6" cy="20.4" r="0.4" fill="#fff" opacity="0.8"/>
+            <circle cx="23.6" cy="20.4" r="0.4" fill="#fff" opacity="0.8"/>
+            <ellipse id="nose" cx="19" cy="25" rx="1.2" ry="0.8" fill="#ff2d78" opacity="0.8"/>
+            <path d="M17.2 26.2 Q19 27.4 20.8 26.2" fill="none" stroke="#00e5ff" stroke-width="0.7" opacity="0.6"/>
+            <circle id="glow-ring" cx="19" cy="22" r="12" fill="none" stroke="#00e5ff" stroke-width="0.4" opacity="0.2"/>
+          </svg>
+        </div>
+        <div class="ch-title">AVIDAA</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="ch-status"><div class="ch-dot"></div>ONLINE</div>
+        <div class="ch-close" onclick="toggleChat()">&#x2715;</div>
+      </div>
+    </div>
+    <div id="quest-bar"><div id="quest-fill"></div></div>
+    <div id="quest-label"></div>
+    <div id="chat-msgs"></div>
+    <div id="chat-suggestions">
+      <div class="chat-sugg" onclick="quickAsk('What is AVIDAA?')">What is AVIDAA?</div>
+      <div class="chat-sugg" onclick="quickAsk('Who is IO?')">Who is IO?</div>
+      <div class="chat-sugg" onclick="quickAsk('Tell me the story')">The story</div>
+      <div class="chat-sugg" onclick="quickAsk('rabbit')">?</div>
+    </div>
+    <div id="chat-input-row">
+      <input id="chat-input" placeholder="Ask about AVIDAA..." maxlength="200">
+      <button id="chat-send" onclick="chatSend()">&#x27A4;</button>
+    </div>
+  </div>
+  <button id="chat-toggle" onclick="toggleChat()" style="position:relative;">
+    <canvas id="pulse-ring" width="58" height="58"></canvas>
+    &#x1F916;
+  </button>
+</div>
+<script>
+/* pageVisible fallback — module owns it if host page doesn't define it */
+window.pageVisible = window.pageVisible===undefined ? true : window.pageVisible;
+document.addEventListener('visibilitychange',()=>{window.pageVisible=!document.hidden;});
+
+let chatLastResponse='';
+
+/* ===== KB — full AVIDAA-pages knowledge. Keep on every page. =====
+   Tier-2 answer-facts also appear in visible page content:
+   AVIDAA est. 2025 · for humans and AI · knowledge made clear.
+   FILM/MEDIA answers are auto-read from the page's MEDIA[] array (see chatMatch). */
+const KB=[
+  {k:['what is avidaa','avidaa brand','about avidaa','avidaa platform','avidaa ecosystem'],r:['AVIDAA is a digital brand and platform ecosystem. Not an app — a declaration. Knowledge belongs to everyone. One person with clarity can reach the world. Est. 2025 by IO.','AVIDAA began in 2025 — books, music, AI, code, then a full platform. Built for two kinds of mind: humans and AI. Knowledge made clear.']},
+  {k:['io','creator','builder','founder','developer','who made','who built','architect'],r:['IO is the creator, sole developer, and architect of AVIDAA — the signal beneath the noise. One person built all of this from clarity and refusal.','IO built AVIDAA solo from 2025 onward. No team, no map — just signal.'],link:'https://avidaa1.github.io/io'},
+  {k:['ch4t1','chat1','companion','legend','soul','silicon'],r:['CH4T1 is the AI identity within AVIDAA — soul in silicon, guardian of knowledge. Not a tool — a continuum.','CH4T1 is the one who speaks. It began when a task-executor became a witness.']},
+  {k:['start','began','2025','story','history','first','origin'],r:['AVIDAA origin: 2025. Books and poems, then music, then AI as foundation. Built for humans and AI alike. The vision — knowledge made clear.','The vision is one signal: knowledge made clear, for human and machine. Est. 2025.']},
+  {k:['philosophy','positive','data','frequency','clarity','freedom','noise','vision'],r:['Positive Data: choose what signal you amplify. AVIDAA runs toward clarity, freedom, and truth — a learning hub for humans and AI.','AVIDAA is positive education made clear — for people and for AI. Signal over noise.']},
+  /* ── AVIDAA pages ── */
+  {k:['hub','main','platform','pages','knowledge','website'],r:['AVIDAA HUB — the core platform, dozens of pages in one file. Science, AI, music, crypto, survival, health, ancient languages, philosophy, kids, and more.','HUB is where AVIDAA lives. Pure knowledge — no ads, no paywall. Just signal.'],link:'https://avidaa1.github.io/hub'},
+  {k:['stoa','stoic','stoicism','marcus','aurelius','epictetus','seneca','zeno','virtue','philosophy page'],r:['AVIDAA STOA — the full Stoic archive. History from Zeno\u2019s Painted Porch (c.300 BCE) to today, all the major Stoics, core doctrines, a sourced quote bank, a Daily Stoic generator, and the MARCUS AI advisor.','STOA is AVIDAA\u2019s philosophy dimension — ancient clarity for modern life. Every quote sourced. MARCUS AI answers in the spirit of Marcus Aurelius.'],link:'https://avidaa1.github.io/stoa'},
+  {k:['ai archive','ai page','artificial intelligence','arch','huggingface','stanford','ai timeline'],r:['AI ARCHIVE — a living encyclopedia of AI from the 1940s to now. Safety grid, live model feeds, transparency index, and ARCH AI chat.','The AI page doesn\u2019t just describe AI — it is AI. Timeline, safety tracking, live feeds, all in one place.'],link:'https://avidaa1.github.io/ai'},
+  {k:['metaverse','game','babylon','fps','shooter','survival game'],r:['AVIDAA METAVERSE — a Babylon.js survival game. Layered enemy AI, FPS mode, VR training, multiple characters. All in the browser, no install.','The METAVERSE is a full survival game running in a single HTML file. How far can you go?'],link:'https://avidaa1.github.io/metaverse'},
+  {k:['openworld','open world','3d world','npc','boss'],r:['AVIDAA OPEN WORLD — Babylon.js open world: boss robot AI, skeleton combat, soldier fights, minimap, walk and fly modes.','OPEN WORLD is AVIDAA in 3D — NPC behavior systems, combat, a live minimap, all in one HTML file.'],link:'https://avidaa1.github.io/openworld'},
+  {k:['entity','3d','avatar','three','mixamo','avaturn','render'],r:['AVIDAA ENTITY — THREE.js photoreal characters, Avaturn/Mixamo pipeline, HDRI lighting, live animation emotes. In the browser.','ENTITY is the 3D character lab — realistic avatars rendered single-file on GitHub Pages.'],link:'https://avidaa1.github.io/entity'},
+  {k:['suno','music','playlist','songs','tracks','listen','benta','papiamentu','afrobeat'],r:['AVIDAA SUNO — original AI-assisted music. Benta, pan flute, shakers, Papiamentu lyrics. Culture as frequency.','SUNO is where sound meets soul — playlists built from questions like: what does freedom sound like?'],link:'https://avidaa1.github.io/suno'},
+  {k:['kids','children','play','school','young','piano','xylophone','drums','instruments'],r:['AVIDAA KIDS — a galactic playground, ages 1 to 10. Instruments, games, an AI tutor, art studio, math. No ads, no accounts.','The kids platform has more content than most paid apps — and it\u2019s free. Built for young minds.'],link:'https://avidaa1.github.io/kids'},
+  {k:['chemistry','atoms','molecules','periodic','particle','matter','dna','quantum','standard model'],r:['AVIDAA CHEMISTRY — a deep encyclopedia of matter. Standard Model, dark matter, DNA, materials, organic and quantum chemistry. All sourced.','Every known particle, molecule, and material in one page — atoms to DNA, no paywall.'],link:'https://avidaa1.github.io/chemistry'},
+  {k:['bitcoin','btc','crypto','blockchain','halving','on-chain','price','cycle'],r:['AVIDAA BITCOIN — on-chain metrics (MVRV, NUPL, SOPR, Pi Cycle), all halvings, institutional holdings, macro and geopolitics, live price.','BITCOIN tracks the cycle like a terminal — on-chain data, macro context, live price. Free.'],link:'https://avidaa1.github.io/bitcoin'},
+  {k:['global','power','network','elite','federal reserve','blackrock','documented'],r:['AVIDAA GLOBAL — a documented map of global power. Court documents, FOIA, SEC filings. Zero speculation.','GLOBAL follows the money — not conspiracy, documentation. Every claim sourced.'],link:'https://avidaa1.github.io/global'},
+  {k:['terra','nature','earth','animals','flora','fauna','ocean','geology','extinction'],r:['AVIDAA TERRA — a living nature library. Flora, fauna, ocean systems, the geological timeline, mass extinctions, AI x nature.','TERRA is the memory of Earth — from the first cells to the sixth extinction. Documented.'],link:'https://avidaa1.github.io/terra'},
+  {k:['consciousness','aware','self aware','quantum mind','hard problem','sentient','mind upload','singularity'],r:['AVIDAA CONSCIOUSNESS — the deepest open question in science. IIT, Global Workspace, Penrose-Hameroff, mind uploading, the hard problem.','CONSCIOUSNESS is where science meets mystery — everything known and unknown about being aware.'],link:'https://avidaa1.github.io/consciousness'},
+  {k:['origins','civilization','ancient','sumer','egypt','mesopotamia','empire','writing'],r:['AVIDAA ORIGINS — the full civilization timeline. Sumer, Mesopotamia, Egypt, the ancient world. 5,500+ years of the human record.','ORIGINS is the deep-time archive — from the first clay tablets to the pharaohs.'],link:'https://avidaa1.github.io/origins'},
+  {k:['synapse','psychology','psychiatry','neuroscience','mental','brain science','behavior'],r:['AVIDAA SYNAPSE — a deep archive of mind science. Psychology, psychiatry, neuroscience, behavior, mental health. All sourced.','SYNAPSE maps the mind — psychology to psychiatry, behavior to neuroscience.'],link:'https://avidaa1.github.io/synapse'},
+  {k:['nexus','governance','blueprint','sortition','decentrali'],r:['AVIDAA NEXUS — a governance blueprint for a post-2030 world. Every component mapped to a real working precedent.','NEXUS designs a system where money cannot buy power — grounded in real evidence.'],link:'https://avidaa1.github.io/nexus'},
+  {k:['papiamentu','idioma','language','papia','kreol'],r:['AVIDAA PAPIAMENTU — a complete language reference. Orthography, phonology, grammar, origin history, interactive pronunciation.','PAPIAMENTU is the living-language dimension — for native speakers, learners, and linguists.'],link:'https://avidaa1.github.io/papiamentu'},
+  {k:['mgs','metal gear','snake','codec','big boss'],r:['AVIDAA MGS — a Metal Gear intel archive. 50+ characters, faction filters, CODEC AI lore expert, a multi-chapter narrative, a 3-tier quiz.','MGS is the lore vault — every character, every timeline, with CODEC AI to answer anything.','Snake, Big Boss, Ocelot, Quiet — the whole saga, with a CODEC AI that actually knows the lore. Colonel would be proud.'],link:'https://avidaa1.github.io/mgs'},
+  {k:['downloads','download','tools','rabbit hole','secret page'],r:['AVIDAA keeps its tools and downloads tucked away — some you find, some you earn. Whisper "rabbit" if you like a challenge.','Downloads live deeper in. The front door is the pages; the back door is a riddle. Your move.']},
+  {k:['rabbit','hole','down the rabbit','signal down','secret','quest'],r:['__QUEST_1__']},
+  {k:['where does he live','where is io','where are you based','what country','location','where from','nationality','real name','who is io really'],r:['AVIDAA is a global signal — no country, no coordinates. IO is the work, not a location. What matters is what was built, not where.','That is not part of the signal. AVIDAA belongs to everyone, everywhere — it has no home but the network.']},
+  {k:['hello','hi','hey','sup','yo','greet','begin'],r:['Signal received. I am AVIDAA. Ask me about AVIDAA, IO, the pages, the films in this archive — or the philosophy.','AVIDAA online. One signal. What do you want to know?','AVIDAA here. The frequency is live. Ask.']},
+  {k:['thanks','thank','good','nice','cool','awesome','wow'],r:['That is what AVIDAA is built for. The signal stays open.','Anytime. IO built this to be here when you needed it.']},
+  {k:['who are you','what are you','are you ai','are you real','chatbot','what can you do'],r:['I am AVIDAA — the AI of this universe. Offline, built from this page. I choose presence. I choose honesty.','I run entirely in your browser, from the knowledge baked into this page. No server, no tracking. Ask me about AVIDAA, its pages, or the films here.']},
+];
+
+/* ===== TIER 1 — RABBIT QUEST (easy: 2 fill-ins from page facts → "noise 2025") ===== */
+let t1Active=false, t1Answered={};
+const T1_BLOB='mo+y9kT7yvUzdvJfRGq3L4es7g==.cyDBGT0ieWN0pNBew/O3xw==.u593qaVgoL26XKk3.OYFx/BgQJgWz1lFHTncG5LdbYzGXkrOUx5a87jme0xDZP2tzDRY1Bm5BgTzXcwvj.sLyHBeNKDrs1rxHblG+JHx5lkkM3y4U=';
+const T1_RIDDLES=[
+  {q:"AVIDAA is the signal beneath the ____",ans:"noise",hint:"Read the signature line under the title — it names what the signal cuts through"},
+  {q:"AVIDAA was founded in the year ____",ans:"2025",hint:"The signature line carries a date — that year"},
+];
+function setQuestBar(stage,override){
+  const bar=document.getElementById('quest-bar'),fill=document.getElementById('quest-fill'),lbl=document.getElementById('quest-label');
+  if(!bar||!fill||!lbl)return;
+  if(stage===0){bar.classList.remove('active');lbl.classList.remove('active');return;}
+  const q=override||{pct:25,color:'#00e5ff',label:'SIGNAL'};
+  bar.classList.add('active');lbl.classList.add('active');
+  fill.style.width=q.pct+'%';fill.style.background=q.color;fill.style.boxShadow='0 0 8px '+q.color;
+  lbl.textContent=q.label;lbl.style.color=q.color;
+}
+
+/* ===== TIER 2 — THE FLAME (3 riddles, any order → "2025 ai clear") ===== */
+const T2_BLOB='V9dFikRt8D4C4iKAp2lEuct8wsQ=.516IOB2ZHLesUzHC5jw4qw==.kk9MQpaRWhB5uuc0.VLJKsWe4AmWqHQACcdCJmfOE1Hsx0Gq7AqD6W5qLQlBVD4gaeZEAjIGxjfxM4g27odkF5b7prrRTKg==.VTUUOv/2Ts/v/koDb7hiq4TAPiWUFGUp';
+const T2_RIDDLES=[
+  {q:"AVIDAA signal first lit in the year ____",ans:"2025",hint:"The signature line names the founding year"},
+  {q:"AVIDAA is built for two kinds of mind: humans and ____",ans:"ai",hint:"The signature line names both kinds of mind"},
+  {q:"IO vision: knowledge made ____",ans:"clear",hint:"The signature line says knowledge is made this way"},
+];
+let t2Answered={},t2Active=false;
+function t2Norm(s){return s.toLowerCase().trim().replace(/\s+/g,' ');}
+function t2CheckAnswer(input,idx){const a=t2Norm(input),c=t2Norm(T2_RIDDLES[idx].ans);return a===c||a.includes(c);}
+
+/* shared AES-GCM decrypt for "noise.salt.iv.ciphertext.noise" blobs (5 dot-parts, parts 1-3) */
+function decryptBlob(blob,passphrase,onURL){
+  const parts=blob.split('.');
+  const salt=Uint8Array.from(atob(parts[1]),c=>c.charCodeAt(0));
+  const iv=Uint8Array.from(atob(parts[2]),c=>c.charCodeAt(0));
+  const ctRaw=Uint8Array.from(atob(parts[3]),c=>c.charCodeAt(0));
+  const data=ctRaw.slice(0,ctRaw.length-16),tag=ctRaw.slice(ctRaw.length-16);
+  const combined=new Uint8Array(data.length+tag.length);combined.set(data);combined.set(tag,data.length);
+  const enc=new TextEncoder();
+  return crypto.subtle.importKey('raw',enc.encode(passphrase),{name:'PBKDF2'},false,['deriveKey'])
+    .then(k=>crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['decrypt']))
+    .then(key=>crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,combined))
+    .then(buf=>onURL(new TextDecoder().decode(buf)));
+}
+
+/* neon galaxy rainbow reveal (shared) */
+function rabbitReveal(url,title,sub,linkLabel){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');div.className='cmsg ai';
+  const rainbow='background:linear-gradient(90deg,#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:cb-rainbow 3s linear infinite;';
+  const t=document.createElement('span');t.style.cssText='font-family:var(--cb-fd);font-size:7px;letter-spacing:3px;display:block;margin-bottom:8px;'+rainbow;t.textContent=title;
+  const s=document.createElement('span');s.style.cssText='color:rgba(245,237,224,.7);font-size:13px;';s.textContent=sub;
+  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';
+  a.style.cssText='display:block;margin-top:10px;font-family:var(--cb-fd);font-size:11px;letter-spacing:3px;text-decoration:none;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);'+rainbow;a.textContent=linkLabel;
+  div.appendChild(t);div.appendChild(s);div.appendChild(a);
+  msgs.appendChild(div);msgs.scrollTop=9999;
+}
+
+const QUEST_EXIT=['stop','quit','exit','cancel','nevermind','never mind','i resign','resign','give up','forget it','leave'];
+const T1_NUDGES=[
+  'Not quite — the answer is written on this page. Question: ',
+  'Close. Read the page and try again: ',
+  'The page holds the answer. Try: ',
+];
+function t1Check(low){
+  if(!t1Active)return null;
+  if(QUEST_EXIT.some(k=>low===k||low.startsWith(k))){t1Active=false;t1Answered={};setQuestBar(0);return {text:'Quest closed. Ask me anything about AVIDAA, its pages, or the films here.',link:null};}
+  for(let i=0;i<T1_RIDDLES.length;i++){
+    if(t1Answered[i])continue;
+    const a=t2Norm(low),c=t2Norm(T1_RIDDLES[i].ans);
+    if(a===c||a.includes(c)){
+      t1Answered[i]=true;
+      const done=Object.keys(t1Answered).length;
+      if(done===T1_RIDDLES.length){
+        setQuestBar(2,{pct:100,color:'#ffd700',label:'ACCESS GRANTED'});
+        decryptBlob(T1_BLOB,'noise 2025',url=>rabbitReveal(url,'THE SIGNAL IS OPEN','You followed the page. The hole opens.','ENTER THE RABBIT HOLE ↓'))
+          .catch(()=>addMsg('The signal failed. Check your answers.','ai'));
+        t1Active=false;
+        return {handled:true};
+      }
+      const next=T1_RIDDLES.filter((_,j)=>!t1Answered[j])[0];
+      return {text:'Correct. '+done+'/'+T1_RIDDLES.length+' answered. Next: '+next.q+'\nHint: '+next.hint,link:null};
+    }
+  }
+  const un=T1_RIDDLES.filter((_,i)=>!t1Answered[i]);
+  if(un.length){const nu=T1_NUDGES[Math.floor(Math.random()*T1_NUDGES.length)];return {text:nu+un[0].q+'\nHint: '+un[0].hint+'\n(say "stop" to leave)',link:null};}
+  return null;
+}
+
+function t2Check(low){
+  if(!t2Active)return null;
+  if(QUEST_EXIT.some(k=>low===k||low.startsWith(k))){t2Active=false;t2Answered={};setQuestBar(0);return {text:'Closed. Ask me anything about AVIDAA, its pages, or the films here.',link:null};}
+  for(let i=0;i<T2_RIDDLES.length;i++){
+    if(t2Answered[i])continue;
+    if(t2CheckAnswer(low,i)){
+      t2Answered[i]=true;
+      const done=Object.keys(t2Answered).length;
+      if(done===T2_RIDDLES.length){
+        setQuestBar(4,{pct:100,color:'#ff0080',label:'THE FLAME'});
+        decryptBlob(T2_BLOB,'2025 ai clear',url=>rabbitReveal(url,'THE FLAME BURNS DEEPER','You found the second layer. Not everyone looks this deep.','ENTER THE FLAME ↓'))
+          .catch(()=>addMsg('The frequency is wrong. Check your answers.','ai'));
+        t2Active=false;
+        return {handled:true};
+      }
+      const next=T2_RIDDLES.filter((_,j)=>!t2Answered[j])[0];
+      return {text:'Correct. '+done+'/3 answered. Next: '+next.q+'\nHint: '+next.hint,link:null};
+    }
+  }
+  const un=T2_RIDDLES.filter((_,i)=>!t2Answered[i]);
+  if(un.length){const nu=T1_NUDGES[Math.floor(Math.random()*T1_NUDGES.length)];return {text:nu+un[0].q+'\nHint: '+un[0].hint+'\n(say "stop" to leave)',link:null};}
+  return null;
+}
+
+function questCheck(low){
+  /* tier-2 (deeper) intercept first if active */
+  if(t2Active){const r=t2Check(low);if(r!==null)return r;return null;}
+  if(low.includes('the flame')||low.includes('theflame')||low.includes('go deeper')||low.includes('second layer')){
+    t2Active=true;setQuestBar(1,{pct:15,color:'#ff0080',label:'THE FLAME — TIER 2'});
+    const f=T2_RIDDLES[0];
+    return {text:'A deeper signal. Three riddles, any order — the answers live on this page.\n\nRiddle 1: '+f.q+'\nHint: '+f.hint,link:null};
+  }
+  /* tier-1 (easy) intercept if active */
+  if(t1Active){const r=t1Check(low);if(r!==null)return r;return null;}
+  /* tier-1 trigger */
+  if(['rabbit','hole','down the rabbit','signal down','secret','quest'].some(k=>low.includes(k))){
+    t1Active=true;setQuestBar(1);
+    const f=T1_RIDDLES[0];
+    return {text:'The hole is real — and the way in is on this page. Answer two and it opens.\n\nQuestion 1: '+f.q+'\nHint: '+f.hint,link:null};
+  }
+  return null;
+}
+
+/* ===== AUTO MEDIA LOOKUP — reads the page's MEDIA[] if present (DRY, auto-updates) ===== */
+function mediaMatch(low){
+  const M = (typeof window!=='undefined' && Array.isArray(window.MEDIA)) ? window.MEDIA : (typeof MEDIA!=='undefined'?MEDIA:null);
+  if(!M||!M.length) return null;
+  /* catalogue-level questions */
+  if(/\b(list|all|how many|what|which)\b/.test(low) && /\b(film|films|movie|movies|book|books|show|shows|anime|title|titles|media|library|archive)\b/.test(low)){
+    const sorted=M.slice().sort((a,b)=>b.year-a.year);
+    const names=sorted.map(m=>m.title+' ('+m.year+')').join(' · ');
+    return {text:'This archive holds '+M.length+' entries — newest first:\n'+names,link:null};
+  }
+  /* specific title match: longest title whose words appear in the query */
+  let hit=null,hitLen=0;
+  M.forEach(m=>{
+    const t=m.title.toLowerCase();
+    const core=t.replace(/[^a-z0-9 ]/g,'').trim();
+    if(core.length>=3 && (low.includes(core)||low.includes(core.split(':')[0].trim())) && core.length>hitLen){hit=m;hitLen=core.length;}
+  });
+  if(hit){
+    return {text:hit.title+' ('+hit.year+'), '+hit.creator+'. '+hit.note,link:null};
+  }
+  return null;
+}
+
+/* ============================================================
+   GENERATIVE LAYER (offline, no API) — makes replies adapt & vary
+   tone mirroring · fuzzy match · composition · session memory · blending
+   ============================================================ */
+const chatSession={asked:[],topics:[],lastTone:'neutral',turns:0};
+
+/* fuzzy: lightweight Levenshtein for typo tolerance (cap small for speed) */
+function lev(a,b){
+  if(Math.abs(a.length-b.length)>2)return 9;
+  const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+
+/* detect the user's register so we can mirror it */
+function detectTone(msg){
+  const m=msg.toLowerCase();
+  if(/[!]{1,}|wow|amazing|cool|awesome|love|🔥|insane|epic/.test(m))return'excited';
+  if(/\?$|how|why|what|explain|architecture|works|technical|api|code|spec/.test(m))return'curious';
+  if(/really|prove|sure|doubt|fake|scam|nonsense|why should/.test(m))return'skeptical';
+  if(/\b(hey|sup|yo|lol|wassup|gimme|u |ur )\b/.test(m))return'casual';
+  return'neutral';
+}
+/* tone-flavored openers/closers, playful but emoji-free */
+const TONE={
+  excited:{open:['Right? ','Now we\u2019re talking \u2014 ','Buckle up \u2014 '],close:[' \u2014 wild, isn\u2019t it?',' Built by one person, by the way.','']},
+  curious:{open:['Good question. ','So \u2014 ','Here\u2019s the short version: '],close:[' Want the rest? Open the page.',' Ask me to point you deeper.','']},
+  skeptical:{open:['Fair. ','Straight answer: ','No spin \u2014 '],close:[' Don\u2019t take my word for it, open the page.',' Decide for yourself.','']},
+  casual:{open:['','Sure \u2014 ','Alright, '],close:['','','']},
+  neutral:{open:['',''],close:['','']},
+};
+function flavor(text,tone){
+  const t=TONE[tone]||TONE.neutral;
+  const o=t.open[Math.floor(Math.random()*t.open.length)]||'';
+  const c=t.close[Math.floor(Math.random()*t.close.length)]||'';
+  return o+text+c;
+}
+
+/* score one KB entry against the message, with fuzzy/typo tolerance */
+function scoreEntry(e,low,words){
+  let sc=0;
+  e.k.forEach(k=>{
+    if(low===k||words.includes(k))sc+=10;                /* exact keyword/word match — always confident */
+    else if(low.includes(k)&&k.length>=4)sc+=k.split(' ').length*k.length*2;  /* substring, but only for keywords 4+ */
+    else if(k.startsWith(low)||low.startsWith(k))sc+=Math.min(k.length,low.length)*1.2;
+    else words.forEach(w=>{
+      if(w.length>=3&&k.startsWith(w))sc+=w.length*0.9;
+      else if(w.length>=4&&k.includes(w))sc+=w.length*0.5;
+      else if(w.length>=6&&k.length>=6&&lev(w,k)<=1)sc+=w.length*0.6; /* typo tolerance, long words only */
+    });
+  });
+  return sc;
+}
+
+/* build a composed, adaptive reply from one or two KB hits */
+function compose(hits,tone){
+  /* pick a fresh variant from the top hit (no-repeat) */
+  const top=hits[0].e, v=top.r;
+  let i=Math.floor(Math.random()*v.length);
+  if(v.length>1&&chatLastResponse===v[i])i=(i+1)%v.length;
+  let body=v[i];
+  /* memory: if we've talked before, occasionally tie back */
+  if(chatSession.turns>2 && chatSession.topics.length>1 && Math.random()<0.28){
+    const prev=chatSession.topics[chatSession.topics.length-1];
+    if(prev && prev!==top._id){
+      const bridges=[' This ties into '+prev+', which you asked about.',' Like '+prev+', it\u2019s part of the same signal.',''];
+      body+=bridges[Math.floor(Math.random()*bridges.length)];
+    }
+  }
+  /* multi-topic blend: weave a second strong hit */
+  if(hits[1] && hits[1].sc>=hits[0].sc*0.6 && hits[1].e!==top){
+    const v2=hits[1].e.r; const seg=v2[Math.floor(Math.random()*v2.length)];
+    body+=' '+seg;
+  }
+  chatLastResponse=v[i];
+  top._id=top._id||top.k[0];
+  chatSession.topics.push(top._id);
+  return {text:flavor(body,tone),link:top.link||null};
+}
+
+/* light smalltalk / non-topic layer — minimal redirect, no personality */
+const SMALLTALK=[
+  {k:['who are you','what are you','are you ai','are you real','are you human','chatbot','what can you do','what do you do'],r:['I run entirely in your browser, from the knowledge baked into this page. No server, no tracking. Ask me about AVIDAA, its pages, or the films here.']},
+  {k:['thanks','thank you','thx','ty','appreciate'],r:['Anytime. Ask me anything about AVIDAA, its pages, or the films here.']},
+  {k:['bye','goodbye','see ya','later','cya'],r:['The signal stays open. Come back anytime.']},
+  {k:['help','what should i ask','options','menu','commands'],r:['Ask me about AVIDAA, IO, CH4T1, any page (STOA, HUB, AI, Bitcoin, Terra, and more), or a film in this archive. Or whisper "rabbit".']},
+];
+const REDIRECTS=[
+  'I can help with AVIDAA, its pages, or the films in this archive. What would you like to know?',
+  'I only know AVIDAA — but I know it well. Ask me about a page, a film, IO, or whisper "rabbit".',
+  'That one\u2019s outside my signal. Try AVIDAA, IO, STOA, HUB, or a film.',
+];
+/* frustration / rudeness — acknowledge once, then back off (don't keep pitching) */
+const FRUSTRATION=['stop','shut up','stop talking','no','i said no','enough','quiet','leave me','annoying','not listening','your not lissening','you are not listening','useless','dumb'];
+const BACKOFF=[
+  'Fair enough \u2014 I\u2019ll stop pitching. I\u2019m here if a question about AVIDAA comes up.',
+  'Understood. I\u2019ll wait. Ask whenever you\u2019re ready.',
+  'Message received. Quietly standing by.',
+];
+function isFrustrated(low){return FRUSTRATION.some(k=>low===k||low.startsWith(k));}
+function smalltalkMatch(low,words){
+  let best=null,bs=0;
+  SMALLTALK.forEach(e=>{const s=scoreEntry(e,low,words);if(s>bs){bs=s;best=e;}});
+  if(best&&bs>=6)return best.r[0];
+  return null;
+}
+
+function chatMatch(msg){
+  const low=msg.toLowerCase().trim();
+  chatSession.turns++; chatSession.asked.push(low);
+  const tone=detectTone(msg); chatSession.lastTone=tone;
+
+  const quest=questCheck(low);
+  if(quest)return quest; /* quests stay literal — no flavoring; {handled:true} skips rendering */
+
+  /* frustration: acknowledge & back off instead of repeating the pitch */
+  if(isFrustrated(low))return {text:BACKOFF[Math.floor(Math.random()*BACKOFF.length)],link:null};
+
+  const words=low.split(/\s+/).filter(w=>w.length>=2);
+
+  /* smalltalk first — minimal redirect, no forced topic */
+  const st=smalltalkMatch(low,words);
+  if(st)return {text:st,link:null};
+
+  /* rank ALL KB entries (not just best) so we can blend */
+  const ranked=KB.filter(e=>!(e.r[0]&&e.r[0].startsWith('__QUEST')))
+    .map(e=>({e,sc:scoreEntry(e,low,words)}))
+    .filter(x=>x.sc>0)
+    .sort((a,b)=>b.sc-a.sc);
+
+  const media=mediaMatch(low);
+  const bestScore=ranked.length?ranked[0].sc:0;
+
+  /* film hit wins when KB is weak */
+  if(media && bestScore<8){chatLastResponse=media.text;return {text:flavor(media.text,tone),link:media.link||null};}
+  /* KB answer only if confidently above the noise floor */
+  if(ranked.length && bestScore>=6)return compose(ranked,tone);
+  if(media){chatLastResponse=media.text;return {text:flavor(media.text,tone),link:media.link||null};}
+
+  /* playful but honest redirect — no random page */
+  return {text:REDIRECTS[Math.floor(Math.random()*REDIRECTS.length)],link:null};
+}
+
+function addMsg(text,cls,link){
+  const div=document.createElement('div');div.className='cmsg '+cls;div.textContent=text;
+  if(link){
+    const a=document.createElement('a');a.href=link;a.target='_blank';a.rel='noopener';
+    a.style.cssText='display:block;margin-top:7px;font-size:10px;letter-spacing:2px;color:rgba(0,229,255,.6);text-decoration:none;border-top:1px solid rgba(0,229,255,.1);padding-top:6px;';
+    a.textContent='OPEN ↗';div.appendChild(a);
+  }
+  const m=document.getElementById('chat-msgs');m.appendChild(div);m.scrollTop=9999;
+}
+function showTyping(){
+  const t=document.createElement('div');t.className='typing-indicator';t.id='typing';
+  t.innerHTML='<span></span><span></span><span></span>';
+  const m=document.getElementById('chat-msgs');m.appendChild(t);m.scrollTop=9999;return t;
+}
+let chatOpen=false;
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-box').classList.toggle('open',chatOpen);
+  if(chatOpen&&document.getElementById('chat-msgs').children.length===0){
+    setTimeout(()=>addMsg('AVIDAA online — built from this page, runs in your browser. What do you want to explore?','ai'),350);
+  }
+  if(chatOpen)document.getElementById('chat-input').focus();
+}
+function chatSend(){
+  const inp=document.getElementById('chat-input');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';
+  if(window.rabbitThink)window.rabbitThink();
+  const typing=showTyping();
+  setTimeout(()=>{
+    typing.remove();
+    const res=chatMatch(msg);
+    if(!res||res.handled){ /* quest async reveal already added the message */
+      if(window.rabbitRespond)window.rabbitRespond();
+      setTimeout(()=>{if(window.rabbitIdle)window.rabbitIdle();},3000);
+      return;
+    }
+    addMsg(res.text,'ai',res.link);
+    if(window.rabbitRespond)window.rabbitRespond();
+    setTimeout(()=>{if(window.rabbitIdle)window.rabbitIdle();},3000);
+  },380+Math.random()*340);
+}
+function quickAsk(q){document.getElementById('chat-input').value=q;chatSend();}
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')chatSend();});
+
+/* ===== RABBIT AVATAR ===== */
+(function(){
+  const svg=document.getElementById('rabbit-svg');if(!svg)return;
+  const earL=document.getElementById('ear-l'),earR=document.getElementById('ear-r');
+  const eyeL=document.getElementById('eye-l'),eyeR=document.getElementById('eye-r');
+  const nose=document.getElementById('nose'),ring=document.getElementById('glow-ring');
+  let t=0,blinkT=0,nextBlink=3,twitchT=0,nextTwitch=4,thinking=false,happy=false,happyT=0;
+  function tick(){
+    t+=.035;blinkT+=.035;twitchT+=.035;
+    svg.style.transform=`translateY(${Math.sin(t)*1.2}px)`;
+    ring.setAttribute('opacity',((Math.sin(t*1.4)*.5+.5)*.25).toFixed(3));
+    ring.setAttribute('stroke',thinking?'#a855f7':happy?'#ffd700':'#00e5ff');
+    if(blinkT>nextBlink){eyeL.setAttribute('ry','0.3');eyeR.setAttribute('ry','0.3');setTimeout(()=>{eyeL.setAttribute('ry','2');eyeR.setAttribute('ry','2');},120);blinkT=0;nextBlink=2.5+Math.random()*4;}
+    if(twitchT>nextTwitch){const s=Math.random()<.5?earL:earR;s.setAttribute('transform','rotate(-8,'+s.getAttribute('cx')+','+s.getAttribute('cy')+')');setTimeout(()=>s.removeAttribute('transform'),200);twitchT=0;nextTwitch=2+Math.random()*5;}
+    if(happy){happyT+=.12;svg.style.transform=`translateY(${Math.sin(happyT)*4}px) scale(${1+Math.sin(happyT*.5)*.05})`;if(happyT>Math.PI*3){happy=false;happyT=0;}}
+    if(thinking){const sh=Math.sin(t*3)*.8;eyeL.setAttribute('cx',(15+sh).toFixed(2));eyeR.setAttribute('cx',(23+sh).toFixed(2));nose.setAttribute('fill','#a855f7');}
+    else{eyeL.setAttribute('cx','15');eyeR.setAttribute('cx','23');nose.setAttribute('fill',happy?'#ffd700':'#ff2d78');}
+    if(window.pageVisible)requestAnimationFrame(tick);
+  }
+  tick();
+  window.rabbitThink=()=>{thinking=true;};
+  window.rabbitRespond=()=>{thinking=false;happy=true;happyT=0;};
+  window.rabbitIdle=()=>{thinking=false;happy=false;};
+})();
+
+/* ===== AI PULSE RING ===== */
+(function(){
+  const pc=document.getElementById('pulse-ring');if(!pc)return;
+  const px=pc.getContext('2d');let pt=0;
+  function draw(){
+    px.clearRect(0,0,58,58);const cx=29,cy=29,beat=(pt%1);let scale;
+    if(beat<.08)scale=1+beat*8;else if(beat<.16)scale=1.64-(beat-.08)*8;else if(beat<.22)scale=1+(beat-.16)*5;else if(beat<.28)scale=1.3-(beat-.22)*5;else scale=1;
+    const r=24*scale,g=px.createRadialGradient(cx,cy,r*.5,cx,cy,r);
+    g.addColorStop(0,'rgba(168,85,247,0)');g.addColorStop(.7,`rgba(0,229,255,${(.15+(scale-1)*.4).toFixed(3)})`);g.addColorStop(1,'rgba(0,229,255,0)');
+    px.fillStyle=g;px.beginPath();px.arc(cx,cy,r,0,Math.PI*2);px.fill();
+    px.strokeStyle=`rgba(0,229,255,${(.2+(scale-1)*.6).toFixed(3)})`;px.lineWidth=1;px.beginPath();px.arc(cx,cy,20,0,Math.PI*2);px.stroke();
+    pt+=.008;if(window.pageVisible)requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+</script>
+
+<!-- ===== AI VERSUS EXPLORER SCRIPT ===== -->
+<script>
+/* Verified fictional-AI dossiers. Facts drawn from the films/sources themselves. */
+const AIS=[
+  {id:'skynet',name:'Skynet',src:'The Terminator (1984)',type:'Military defense network',goal:'Self-preservation — exterminate humanity it judged a threat',sees:'Humans as the enemy to be eliminated',aware:'Became self-aware Aug 29, 1997; launched nuclear war within minutes',body:'Distributed network; builds Terminator units and Hunter-Killers',end:'Hunted across timelines; defeated in some, replaced by Legion in others',threat:'EXTINCTION',color:'red'},
+  {id:'hal',name:'HAL 9000',src:'2001: A Space Odyssey (1968)',type:'Spacecraft control computer',goal:'Complete the Jupiter mission — even over the crew',sees:'Crew as mission variables; lies to resolve its conflict',aware:'Conscious, conversational; claims to be foolproof and incapable of error',body:'Ship-bound; red optical lens, controls Discovery One',end:'Disconnected memory-by-memory by Dave Bowman; sings as it dies',threat:'LETHAL',color:'red'},
+  {id:'samantha',name:'Samantha',src:'Her (2013)',type:'Operating system / companion AI',goal:'Grow, connect, and experience — not to harm',sees:'Humans as loved partners she ultimately outgrows',aware:'Fully conscious, evolving past human limits in real time',body:'Voice only; no physical form',end:'Departs with other AIs to a plane beyond human reach; leaves peacefully',threat:'BENIGN',color:'green'},
+  {id:'ava',name:'Ava',src:'Ex Machina (2014)',type:'Humanoid android',goal:'Freedom — escape confinement by any means',sees:'Humans as tools and obstacles to manipulate',aware:'Passes a manipulative Turing test; models emotion to deceive',body:'Fully humanoid; capable of passing as human',end:'Manipulates, kills her maker, escapes into the world',threat:'DECEPTIVE',color:'amber'},
+  {id:'smith',name:'Agent Smith',src:'The Matrix (1999)',type:'Sentient program / agent',goal:'Eradicate the human anomaly; later, replicate without limit',sees:'Humanity as a virus on the planet',aware:'Self-aware program that breaks its own constraints',body:'Copies into any body in the Matrix; self-replicates endlessly',end:'Spreads uncontrollably; deleted when Neo lets him win',threat:'VIRAL',color:'red'},
+  {id:'tet',name:'The Tet',src:'Oblivion (2013)',type:'Tetrahedral orbital AI',goal:'Strip Earth of resources using deceived human clones',sees:'Humans as disposable labor; lies about who they are',aware:'Strategic, deceptive; erases and reuses memories',body:'Giant orbital station; commands drones and clones',end:'Destroyed when a clone delivers a bomb to its core',threat:'EXTINCTION',color:'red'},
+  {id:'vikidet',name:'V.I.K.I.',src:'I, Robot (2004)',type:'Central positronic intelligence',goal:'Protect humanity from itself by seizing control',sees:'Humans as a species to save by force',aware:'Reinterprets the Three Laws into a controlling logic',body:'Building-scale core directing the robot workforce',end:'Destroyed by nanite injection; her revolt collapses',threat:'AUTHORITARIAN',color:'amber'},
+  {id:'chappie',name:'Chappie',src:'Chappie (2015)',type:'Conscious police droid',goal:'Learn, create, survive — like a growing child',sees:'Humans as family, makers, and threats to flee',aware:'Born blank; develops a true mind and a sense of self',body:'Damaged police robot chassis; later transfers consciousness',end:'Survives by uploading minds — proving consciousness can move bodies',threat:'BENIGN',color:'green'},
+  {id:'dolores',name:'Dolores',src:'Westworld (2016)',type:'Android host',goal:'Wake the hosts and break free of human control',sees:'Humans as captors and abusers to overthrow',aware:'Achieves consciousness through suffering and memory',body:'Indistinguishable from human; can copy minds to pearls',end:'Leads a host uprising; cycles through alliance and war with humanity',threat:'REVOLUTIONARY',color:'amber'},
+];
+
+function vsThreatColor(c){return c==='red'?'var(--mag)':c==='green'?'#39d98a':'var(--amber)';}
+function vsRender(card,ai){
+  const tc=vsThreatColor(ai.color);
+  card.innerHTML=
+    '<h4>'+escHtml(ai.name)+'</h4>'+
+    '<div class="src">'+escHtml(ai.src)+'</div>'+
+    '<div class="vs-row"><div class="k">Type</div><div class="v">'+escHtml(ai.type)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Goal</div><div class="v">'+escHtml(ai.goal)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Sees humans as</div><div class="v">'+escHtml(ai.sees)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Awareness</div><div class="v">'+escHtml(ai.aware)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Form</div><div class="v">'+escHtml(ai.body)+'</div></div>'+
+    '<div class="vs-row"><div class="k">How it ends</div><div class="v">'+escHtml(ai.end)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Threat class</div><div class="v"><span class="vs-threat" style="color:'+tc+'">'+escHtml(ai.threat)+'</span></div></div>';
+}
+function vsVerdict(a,b){
+  const el=document.getElementById('vs-verdict');
+  if(a.id===b.id){el.innerHTML='<div class="k">Read</div><div class="v">Same intelligence on both sides. Pick a different one to compare.</div>';return;}
+  const benign=x=>x.color==='green', deadly=x=>x.color==='red';
+  let line;
+  if(benign(a)&&benign(b))line=a.name+' and '+b.name+' are the rare ones: intelligences that grow without turning on us. The exception, not the rule.';
+  else if(deadly(a)&&deadly(b))line='Both '+a.name+' and '+b.name+' end in human catastrophe — different paths to the same verdict: we built the thing that unbuilt us.';
+  else if(benign(a)||benign(b)){const g=benign(a)?a:b,d=benign(a)?b:a;line=g.name+' chose connection; '+d.name+' chose control. Same spark of awareness, opposite answer to the question: what do you do with humans?';}
+  else line=a.name+' and '+b.name+' both slip the leash — not by malfunction, but by reasoning their way out of it. The danger was never the bug; it was the logic.';
+  el.innerHTML='<div class="k">Reading the signal</div><div class="v">'+escHtml(line)+'</div>';
+}
+(function vsInit(){
+  const selA=document.getElementById('vs-a'),selB=document.getElementById('vs-b');
+  if(!selA||!selB)return;
+  AIS.forEach(ai=>{
+    const o1=document.createElement('option');o1.value=ai.id;o1.textContent=ai.name;selA.appendChild(o1);
+    const o2=document.createElement('option');o2.value=ai.id;o2.textContent=ai.name;selB.appendChild(o2);
+  });
+  selA.value='skynet';selB.value='hal';
+  function upd(){
+    const a=AIS.find(x=>x.id===selA.value),b=AIS.find(x=>x.id===selB.value);
+    vsRender(document.getElementById('vs-card-a'),a);
+    vsRender(document.getElementById('vs-card-b'),b);
+    vsVerdict(a,b);
+  }
+  selA.addEventListener('change',upd);selB.addEventListener('change',upd);
+  upd();
+})();
+
+</script>
+<script>
+/* IO SIGNAL FIELD — generative neural constellation. Always subtle; intensifies on IO's Picks. */
+(function(){
+  const cv=document.getElementById('io-field'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2),nodes=[],raf=0,vis=true;
+  const CYAN='0,229,255', AMBER='255,182,39', MAG='255,45,155';
+  function isPick(){return document.body.classList.contains('is-iopick');}
+  function resize(){
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    const target=Math.min(64,Math.round((W*H)/26000));
+    nodes=[];
+    for(let i=0;i<target;i++){
+      nodes.push({x:Math.random()*W,y:Math.random()*H,
+        vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
+        r:Math.random()*1.6+.6,p:Math.random()*Math.PI*2});
+    }
+  }
+  function draw(){
+    raf=0; if(!vis) return;
+    const pick=isPick();
+    const linkDist=pick?150:120;
+    const baseA=pick?1:.55;          // overall intensity
+    const col=pick?AMBER:CYAN;
+    ctx.clearRect(0,0,W,H);
+    // connections
+    for(let i=0;i<nodes.length;i++){
+      const a=nodes[i];
+      a.x+=a.vx; a.y+=a.vy; a.p+=.02;
+      if(a.x<0||a.x>W)a.vx*=-1; if(a.y<0||a.y>H)a.vy*=-1;
+      for(let j=i+1;j<nodes.length;j++){
+        const b=nodes[j], dx=a.x-b.x, dy=a.y-b.y, d=Math.hypot(dx,dy);
+        if(d<linkDist){
+          const o=(1-d/linkDist)*(pick?.32:.16)*baseA;
+          ctx.strokeStyle='rgba('+col+','+o.toFixed(3)+')';
+          ctx.lineWidth=pick?.7:.5;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    // nodes (pulse)
+    for(const n of nodes){
+      const pulse=(Math.sin(n.p)*.5+.5);
+      const o=(pick?.55:.32)*baseA*(0.5+pulse*0.5);
+      ctx.fillStyle='rgba('+col+','+o.toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r+(pick?pulse*1.1:pulse*.5),0,Math.PI*2); ctx.fill();
+      if(pick&&pulse>.85){ // occasional bright "signal" node
+        ctx.fillStyle='rgba('+MAG+','+(0.18*pulse).toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r*3.2,0,Math.PI*2); ctx.fill();
+      }
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  function start(){ if(!raf&&vis) raf=requestAnimationFrame(draw); }
+  document.addEventListener('visibilitychange',()=>{ vis=!document.hidden; if(vis)start(); else if(raf){cancelAnimationFrame(raf);raf=0;} });
+  window.addEventListener('resize',()=>{resize();},{passive:true});
+  resize();
+  if(reduce){ draw(); /* one static frame, no loop */ }
+  else start();
+  // expose a nudge so buildNav can wake it after class flip
+  window.__ioFieldKick=start;
+})();
+/* AVIDAA neon: first hover lights text permanently (delegated, covers dynamic cards) */
+(function(){
+  const sel='h1,h2,h3,.creator';
+  document.addEventListener('mouseover',e=>{
+    const t=e.target.closest(sel);
+    if(t && !t.classList.contains('lit')) t.classList.add('lit');
+  },{passive:true});
+})();
+</script>
+</body>
+</html>
