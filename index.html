@@ -309,7 +309,72 @@ footer b{color:var(--cyan)}
 .vs-verdict .v{font-size:.92rem;color:var(--text);line-height:1.6}
 
 </style>
-</head>
+<style id="mp-20261124">/* mobile pass + AVIDAA design system v1 (20261124) */html{-webkit-text-size-adjust:100%}img,video{max-width:100%;height:auto}iframe{max-width:100%}pre{max-width:100%;overflow-x:auto}/* AVIDAA design system v1 (20261124). Inline this file into a page; pages stay single files.
+   Rule of thumb: tokens first, components named .av-*, baseline polish only through :where() (zero specificity) so a page's own styles always win. */
+:root{
+  /* base */
+  --av-bg:#050818; --av-bg2:#0B0F30; --av-surface:rgba(255,255,255,.06); --av-surface-2:rgba(255,255,255,.10);
+  --av-line:rgba(255,255,255,.16); --av-fg:#F3F1FF; --av-muted:#B3B0DD; --av-focus:#FFD93D;
+  /* sector colors */
+  --av-aegis:#FF4D6D; --av-knowledge:#5BC0FF; --av-games:#B28DFF; --av-kids:#FFD93D; --av-music:#FF7AA8; --av-tools:#4ADE80; --av-archive:#8892B0;
+  --av-accent:var(--av-knowledge);
+  /* one type scale (px) */
+  --av-fs-0:14px; --av-fs-1:16px; --av-fs-2:18px; --av-fs-3:22px; --av-fs-4:28px; --av-fs-5:36px; --av-fs-6:48px;
+  /* spacing scale (px) */
+  --av-s-1:4px; --av-s-2:8px; --av-s-3:12px; --av-s-4:16px; --av-s-5:24px; --av-s-6:32px; --av-s-7:48px; --av-s-8:64px;
+  /* shape, motion */
+  --av-r-sm:10px; --av-r:16px; --av-r-lg:26px; --av-r-pill:999px;
+  --av-ease:cubic-bezier(.2,.8,.2,1); --av-t:.18s;
+  --av-font:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Varela Round',system-ui,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --av-mono:ui-monospace,'SF Mono','Cascadia Mono','DejaVu Sans Mono',Menlo,Consolas,monospace;
+  --av-header-h:48px;
+}
+/* focus: always visible, always the same */
+:focus-visible{outline:3px solid var(--av-focus)!important;outline-offset:2px!important;border-radius:6px}
+/* baseline polish for unstyled controls (zero specificity: page styles win) */
+:where(button:not([class]):not([style]),input[type=button]:not([class]),input[type=submit]:not([class])){
+  min-height:44px;min-width:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);border:2px solid var(--av-line);
+  background:var(--av-surface-2);color:var(--av-fg);font:700 var(--av-fs-1)/1 var(--av-font);cursor:pointer;
+  transition:transform var(--av-t) var(--av-ease),background var(--av-t) var(--av-ease)}
+:where(button:not([class]):not([style]):hover){background:rgba(255,255,255,.18)}
+:where(button:not([class]):not([style]):active){transform:scale(.97)}
+:where(input[type=text],input[type=search],input[type=email],input[type=number],input[type=password],select,textarea):where(:not([class]):not([style])){
+  min-height:44px;padding:0 var(--av-s-3);border-radius:var(--av-r-sm);border:2px solid var(--av-line);background:rgba(0,0,0,.35);color:var(--av-fg);font:600 var(--av-fs-1) var(--av-font)}
+:where(a:not([class])){text-underline-offset:3px;text-decoration-thickness:1.5px}
+/* components */
+.av-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--av-s-2);min-height:44px;min-width:44px;padding:0 var(--av-s-5);border-radius:var(--av-r-pill);border:0;cursor:pointer;
+  font:800 var(--av-fs-1)/1 var(--av-font);color:#1B1640;background:linear-gradient(110deg,#FFD93D,#FF7AA8);text-decoration:none;
+  transition:transform var(--av-t) var(--av-ease),filter var(--av-t) var(--av-ease),box-shadow var(--av-t) var(--av-ease)}
+.av-btn:hover{filter:brightness(1.08);box-shadow:0 8px 24px -8px var(--av-accent)}
+.av-btn:active{transform:scale(.96)}
+.av-btn--ghost{background:var(--av-surface-2);color:var(--av-fg);border:2px solid var(--av-line)}
+.av-btn--sm{padding:0 var(--av-s-4);font-size:var(--av-fs-0)}
+.av-card{position:relative;padding:var(--av-s-5);border-radius:var(--av-r-lg);border:2px solid color-mix(in srgb,var(--av-accent) 55%,transparent);
+  background:radial-gradient(110% 80% at 50% 0%,color-mix(in srgb,var(--av-accent) 20%,transparent),transparent 75%),var(--av-surface);
+  box-shadow:0 14px 30px -18px var(--av-accent);transition:transform var(--av-t) var(--av-ease),box-shadow var(--av-t) var(--av-ease)}
+.av-card:hover{transform:translateY(-3px);box-shadow:0 20px 36px -16px var(--av-accent)}
+.av-tabs{display:flex;gap:var(--av-s-2);flex-wrap:wrap}
+.av-tab{min-height:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);border:2px solid var(--av-line);background:var(--av-surface);color:var(--av-muted);font:800 var(--av-fs-0) var(--av-font);cursor:pointer}
+.av-tab[aria-selected="true"],.av-tab.is-on{background:linear-gradient(135deg,#7C5CFF,#FF5FA2);border-color:transparent;color:#fff}
+.av-input{min-height:44px;padding:0 var(--av-s-3);border-radius:var(--av-r-sm);border:2px solid var(--av-line);background:rgba(0,0,0,.35);color:var(--av-fg);font:600 var(--av-fs-1) var(--av-font)}
+.av-chip{display:inline-block;padding:2px var(--av-s-3);border-radius:var(--av-r-pill);border:1px solid var(--av-accent);color:var(--av-accent);font:800 var(--av-fs-0) var(--av-font)}
+.av-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#4ADE80;box-shadow:0 0 10px #4ADE80}
+/* shared header */
+.av-header{position:relative;z-index:2147483000;display:flex;align-items:center;gap:var(--av-s-3);height:var(--av-header-h);padding:0 var(--av-s-4);
+  background:rgba(6,9,30,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:2px solid var(--av-accent);font-family:var(--av-font);color:var(--av-fg)}
+.av-back{display:inline-flex;align-items:center;gap:var(--av-s-2);min-height:44px;padding:0 var(--av-s-4) 0 var(--av-s-2);border-radius:var(--av-r-pill);color:var(--av-fg);text-decoration:none;font:800 var(--av-fs-1)/1 var(--av-font);white-space:nowrap;transition:background var(--av-t) var(--av-ease)}
+.av-back:hover{background:var(--av-surface-2)}
+.av-back svg{width:22px;height:22px;flex:none}
+.av-header .av-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 var(--av-fs-1)/1 var(--av-font);color:var(--av-accent)}
+.av-pill{position:fixed;top:8px;right:8px;z-index:2147483000;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);background:rgba(6,9,30,.82);border:2px solid var(--av-accent);color:var(--av-fg);text-decoration:none;font:800 var(--av-fs-0)/1 var(--av-font);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.av-pill svg{width:20px;height:20px}
+/* shared footer: the stamp is one line and never wraps */
+.av-footer{display:flex;flex-direction:column;align-items:center;gap:var(--av-s-1);padding:var(--av-s-5) var(--av-s-4);background:rgba(6,9,30,.92);border-top:1px solid var(--av-line);font:600 var(--av-fs-0)/1.4 var(--av-font);color:var(--av-muted);text-align:center}
+.av-footer a{color:var(--av-fg);font-weight:800;display:inline-flex;align-items:center;min-height:44px}
+.av-stamp{white-space:nowrap;font:700 var(--av-fs-0)/1.4 var(--av-mono);letter-spacing:0}
+.av-footer--bar{position:fixed;left:0;right:0;bottom:0;z-index:2147482000;padding:0 var(--av-s-3);height:28px;flex-direction:row;justify-content:center;pointer-events:none;border-top:0;background:rgba(5,8,24,.7)}
+@media (prefers-reduced-motion:reduce){.av-btn,.av-card,.av-back,.av-tab{transition:none!important}.av-card:hover{transform:none}html{scroll-behavior:auto}}
+</style></head>
 <body>
 <canvas id="io-field" aria-hidden="true"></canvas>
 <div class="io-sweep" aria-hidden="true"></div>
@@ -1345,5 +1410,78 @@ function vsVerdict(a,b){
   },{passive:true});
 })();
 </script>
-</body>
+<script id="mp-js-20261124">/* mobile pass 20261124: finger-size targets and readable text on phones and tablets */
+(function(){var MIN=44,t=null;
+function fix(){var vw=innerWidth;if(vw>1100||!document.body)return;
+var ctl=document.querySelectorAll('button,select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=color]):not([type=file]),[role=button],a');
+for(var i=0;i<ctl.length&&i<3000;i++){var e=ctl[i],cs=getComputedStyle(e);if(cs.display==='none'||cs.visibility==='hidden')continue;if(e.tagName==='A'&&cs.display==='inline')continue;var r=e.getBoundingClientRect();if(!r.width||!r.height)continue;
+if(r.height<MIN-.5&&!e.__mpH){e.style.minHeight=MIN+'px';e.__mpH=1;}
+if(r.width<MIN-.5&&!e.__mpW){e.style.minWidth=MIN+'px';e.__mpW=1;}}
+var all=document.body.querySelectorAll('*');
+for(var j=0;j<all.length&&j<6000;j++){var x=all[j],tg=x.tagName;if(tg==='SCRIPT'||tg==='STYLE'||tg==='SVG'||tg==='CANVAS'||x.__mpF)continue;
+var own=false;for(var n=x.firstChild;n;n=n.nextSibling){if(n.nodeType===3&&n.textContent.trim().length>1){own=true;break;}}
+if(!own)continue;var c2=getComputedStyle(x);if(c2.display==='none')continue;
+if(parseFloat(c2.fontSize)<13.95){x.style.fontSize='14px';x.__mpF=1;}}
+var big=document.body.querySelectorAll('*');
+for(var k=0;k<big.length&&k<6000;k++){var y=big[k];if(y.__mpO)continue;var c3=getComputedStyle(y);if(c3.position==='fixed'||c3.display==='none')continue;var rr=y.getBoundingClientRect();if(rr.width&&rr.right>vw+2&&rr.left<vw&&rr.width>vw*0.6){y.style.maxWidth='100%';y.style.boxSizing='border-box';y.__mpO=1;}}}
+function sched(){clearTimeout(t);t=setTimeout(fix,300);}
+function start(){fix();try{new MutationObserver(sched).observe(document.body,{childList:true,subtree:true});}catch(e){}}
+if(document.readyState==='complete')start();else addEventListener('load',start);
+addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/* AVIDAA shell: shared header (or floating pill) + footer with the "Last updated" stamp. No outside calls, no tracking.
+   Template tokens are replaced when a page is built: Watchlist --av-knowledge Knowledge 2026-11-24 06:37 */
+(function(){
+  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-24 06:37',HOME='https://avidaa1.github.io/';
+  var ARROW='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function build(){
+    if(!document.body||document.querySelector('.av-footer'))return;
+    var root=document.documentElement,body=document.body;
+    root.style.setProperty('--av-accent','var('+SECTOR+')');
+    var appLike=getComputedStyle(body).overflowY==='hidden'||getComputedStyle(root).overflowY==='hidden'||root.scrollHeight<=innerHeight*1.02;
+    var hasHome=[].some.call(document.querySelectorAll('a[href]'),function(a){var h=(a.getAttribute('href')||'').replace(/#.*$/,'');return /^https:\/\/avidaa1\.github\.io\/?$/.test(h)&&a.offsetParent!==null;});
+    var footer=document.createElement('footer');
+    footer.className='av-footer'+(appLike?' av-footer--bar':'');
+    footer.innerHTML=(appLike?'':'<a href="'+HOME+'">AVIDAA home</a>')+'<span class="av-stamp">Last updated '+STAMP+' UTC</span>';
+    root.appendChild(footer);
+    var fixedTop=[],fixedBottom=[];
+    function collect(){
+      var all=body.querySelectorAll('*');
+      for(var i=0;i<all.length&&i<2500;i++){
+        var e=all[i];if(e.closest('.av-header,.av-footer,.av-pill'))continue;var cs=getComputedStyle(e);
+        if(cs.position!=='fixed'||e.getBoundingClientRect().width<innerWidth*0.4)continue;
+        if(cs.top!=='auto'&&parseFloat(cs.top)<=8)fixedTop.push([e,parseFloat(cs.top)]);
+        else if(cs.bottom!=='auto'&&parseFloat(cs.bottom)<=8)fixedBottom.push([e,parseFloat(cs.bottom)]);
+      }
+    }
+    var HH=0,FB=appLike?28:0;
+    if(!appLike){
+      var h=document.createElement('header');h.className='av-header';
+      h.innerHTML='<a class="av-back" href="'+HOME+'" aria-label="Back to AVIDAA home">'+ARROW+'AVIDAA</a><span class="av-title"></span>';
+      h.querySelector('.av-title').textContent=NAME;
+      root.insertBefore(h,body);HH=h.offsetHeight||48;
+    }
+    collect();
+    function place(){
+      var off=Math.max(0,HH-(window.scrollY||0));
+      fixedTop.forEach(function(x){x[0].style.top=(x[1]+off)+'px';});
+      fixedBottom.forEach(function(x){x[0].style.bottom=(x[1]+FB)+'px';});
+    }
+    place();addEventListener('scroll',place,{passive:true});addEventListener('resize',place);
+    if(appLike&&!hasHome){
+      var p=document.createElement('a');p.className='av-pill';p.href=HOME;p.setAttribute('aria-label','Back to AVIDAA home');
+      p.innerHTML=ARROW+'AVIDAA';root.appendChild(p);
+      var UI='a,button,input,select,textarea,[onclick],[role=button]';
+      function busy(l,t,w,hh){
+        for(var yy=0;yy<3;yy++)for(var xx=0;xx<3;xx++){
+          var els=document.elementsFromPoint(l+w*(xx+.5)/3,t+hh*(yy+.5)/3);
+          for(var q=0;q<els.length;q++){if(els[q]===p||p.contains(els[q]))continue;if(els[q].matches&&els[q].matches(UI))return true;}
+        }return false;
+      }
+      var r=p.getBoundingClientRect(),w=r.width,hh=r.height,vw=innerWidth,vh=innerHeight;
+      var spots=[['top:8px;right:8px',vw-w-8,8],['top:8px;left:8px',8,8],['bottom:'+(FB+8)+'px;right:8px',vw-w-8,vh-hh-FB-8],['bottom:'+(FB+8)+'px;left:8px',8,vh-hh-FB-8]];
+      for(var si=0;si<spots.length;si++){p.style.cssText='top:auto;right:auto;bottom:auto;left:auto;'+spots[si][0];if(!busy(spots[si][1],spots[si][2],w,hh))break;}
+    }
+  }
+  if(document.readyState==='complete'||document.readyState==='interactive')setTimeout(build,0);else addEventListener('DOMContentLoaded',function(){setTimeout(build,0);});
+})();
+</script></body>
 </html>
