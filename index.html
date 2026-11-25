@@ -1431,7 +1431,7 @@ if(document.readyState==='complete')start();else addEventListener('load',start);
 addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/* AVIDAA shell: shared header (or floating pill) + footer with the "Last updated" stamp. No outside calls, no tracking.
    Template tokens are replaced when a page is built: Watchlist --av-knowledge Knowledge 2026-11-24 06:37 */
 (function(){
-  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-25 14:10',HOME='https://avidaa1.github.io/';
+  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-25 14:28',HOME='https://avidaa1.github.io/';
   var ARROW='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function build(){
     if(!document.body||document.querySelector('.av-footer'))return;
@@ -1662,6 +1662,104 @@ addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/*
   setTimeout(placement, 1800);
   size(); build(); t0 = performance.now();
   if (reduced) draw(0, true); else start();
+})();
+</script>
+<script id="av-brand-20261125">window.AV_BRAND_HUE=210;
+/* AVIDAA brand signature v1: neon rainbow wordmark + home button, galactic glow, rotating LED chase borders.
+   Reference: the original AVIDAA root page (rainbow gradient wordmark, #back-home pill, .rl-card LED ring with conic-gradient chase).
+   Colours here are the brand layer; the shared shell keeps only layout/spacing/access. Each page keeps its topic hue for LEDs and glow.
+   No network, no tracking. Animation stops under prefers-reduced-motion (LED ring and glow stay as static). */
+(function () {
+  'use strict';
+  if (window.__avBrand) return;
+  var HUE = (typeof window.AV_BRAND_HUE === 'number') ? window.AV_BRAND_HUE : 200;
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var RB = '#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080';
+  var l1 = 'hsl(' + HUE + ',100%,62%)', l2 = 'hsl(' + ((HUE + 55) % 360) + ',100%,66%)', l3 = 'hsl(' + ((HUE + 305) % 360) + ',100%,68%)';
+  var css = '' +
+    '@property --avA{syntax:"<angle>";inherits:true;initial-value:0deg}' +
+    '@keyframes avSpin{to{--avA:360deg}}@keyframes avRb{to{background-position:200% center}}' +
+    ':root{--av-l1:' + l1 + ';--av-l2:' + l2 + ';--av-l3:' + l3 + ';--av-rb:linear-gradient(90deg,' + RB + ')}' +
+    /* wordmark: the AVIDAA word everywhere the shell prints it */
+    '.av-back,.av-pill,.av-footer a{background:rgba(5,8,24,.78)!important;color:#fff!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:0 0 14px hsla(' + HUE + ',100%,60%,.35),inset 0 0 0 1px rgba(255,255,255,.04)!important;border-radius:999px!important;position:relative}' +
+    '.av-back,.av-pill{font-weight:900!important;letter-spacing:.14em!important;text-transform:uppercase}' +
+    '.av-back::after,.av-pill::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;background:conic-gradient(from var(--avA),#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;animation:avSpin 6s linear infinite}' +
+    '.av-wm{background:linear-gradient(90deg,' + RB + ');background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:avRb 5s linear infinite;font-weight:900;letter-spacing:.14em}' +
+    '.av-header .av-title{color:var(--av-l1)!important;text-shadow:0 0 14px hsla(' + HUE + ',100%,60%,.55)}' +
+    /* galactic glow */
+    '.av-header{box-shadow:0 6px 28px -8px hsla(' + HUE + ',100%,60%,.55),0 1px 0 hsla(' + HUE + ',100%,70%,.35)!important}' +
+    '.av-dark h1{text-shadow:0 0 22px hsla(' + HUE + ',100%,62%,.28)}' +
+    /* LED chase borders */
+    '.av-led{position:relative}' +
+    '.av-led-a::after,.av-led-b::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(from var(--avA),transparent 0 62%,var(--av-l1) 80%,var(--av-l2) 90%,var(--av-l3) 96%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2;filter:drop-shadow(0 0 5px var(--av-l1))}' +
+    '.av-led-on.av-led-a::after,.av-led-on.av-led-b::before{animation:avSpin 4.5s linear infinite}' +
+    '.av-led:hover.av-led-a::after,.av-led:focus-visible.av-led-a::after,.av-led:hover.av-led-b::before,.av-led:focus-visible.av-led-b::before{background:conic-gradient(from var(--avA),#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);padding:3px;animation:avSpin 1.2s linear infinite}' +
+    '@media (prefers-reduced-motion:reduce){.av-back::after,.av-pill::after,.av-wm,.av-led-on.av-led-a::after,.av-led-on.av-led-b::before,.av-led:hover.av-led-a::after,.av-led:hover.av-led-b::before{animation:none!important}}';
+  var done = false;
+  try { if (window.CSSStyleSheet && CSSStyleSheet.prototype.replaceSync && 'adoptedStyleSheets' in document) { var sh = new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sh]); done = true; } } catch (e) {}
+  if (!done) { var st = document.createElement('style'); st.id = 'av-brand-css'; st.textContent = css; document.head.appendChild(st); }
+
+  var MAX_LED = 36, MAX_ANIM = 14, led = [], io = null, animCount = 0;
+  function pseudoFree(el, p) { var c = getComputedStyle(el, p).content; return !c || c === 'none' || c === 'normal'; }
+  function ok(el) {
+    if (el.closest('.av-header,.av-footer,.av-pill,.av-back,nav,header,footer,#av-life,[aria-hidden="true"]')) return false;
+    var cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    var r = el.getBoundingClientRect(); if (r.width < 90 || r.height < 36 || r.width > 760 || r.height > 560) return false;
+    
+    if ((el.textContent || '').trim().length < 4) return false;
+    if (cs.position === 'fixed') return false;
+    return true;
+  }
+  function mark(el) {
+    if (el.classList.contains('av-led') || led.length >= MAX_LED) return;
+    var cs = getComputedStyle(el);
+    if (cs.position === 'static') el.style.position = 'relative';
+    var side = pseudoFree(el, '::after') ? 'a' : (pseudoFree(el, '::before') ? 'b' : null);
+    if (!side) return;
+    el.classList.add('av-led', 'av-led-' + side); led.push(el);
+    if (io) io.observe(el);
+  }
+  function boxy(el) {
+    var cs = getComputedStyle(el), bw = parseFloat(cs.borderTopWidth) || 0, bc = cs.borderTopColor, bg = cs.backgroundColor;
+    var hasBorder = bw >= 1 && !/rgba\(\d+, \d+, \d+, 0\)/.test(bc);
+    var m = /rgba?\(([^)]*)\)/.exec(bg), a = m ? (m[1].split(',').length > 3 ? parseFloat(m[1].split(',')[3]) : 1) : 0;
+    var par = el.parentElement ? getComputedStyle(el.parentElement).backgroundColor : '';
+    return hasBorder || (a > 0.12 && bg !== par) || (cs.boxShadow && cs.boxShadow !== 'none');
+  }
+  function scan() {
+    if (led.length >= MAX_LED) return;
+    var all = [].slice.call(document.body.querySelectorAll('*')).slice(0, 2500), q = [];
+    for (var i = 0; i < all.length; i++) { var el = all[i]; if (el.classList.contains('av-led')) continue; var tg = el.tagName; if (tg === 'SCRIPT' || tg === 'STYLE' || tg === 'svg' || tg === 'CANVAS' || tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') continue; if (ok(el) && boxy(el)) q.push(el); }
+    q = q.filter(function (el) { var inner = 0; for (var k = 0; k < q.length; k++) if (q[k] !== el && el.contains(q[k])) inner++; return inner < 4; });
+    q.sort(function (a, b) { return a.getBoundingClientRect().top - b.getBoundingClientRect().top; });
+    for (var n = 0; n < q.length && led.length < MAX_LED; n++) mark(q[n]);
+  }
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var on = e.target.classList.contains('av-led-on');
+        if (e.isIntersecting && !on && animCount < MAX_ANIM && !reduced) { e.target.classList.add('av-led-on'); animCount++; }
+        else if (!e.isIntersecting && on) { e.target.classList.remove('av-led-on'); animCount--; }
+      });
+    }, { threshold: 0.1 });
+  }
+  /* wordmark: wrap the AVIDAA word of the shell pill/footer link in a rainbow span (text only, safe) */
+  function wordmark() {
+    [].forEach.call(document.querySelectorAll('.av-back,.av-pill,.av-footer a'), function (a) {
+      [].forEach.call(a.childNodes, function (n) {
+        if (n.nodeType === 3 && /AVIDAA/i.test(n.nodeValue) && !a.querySelector('.av-wm')) {
+          var s = document.createElement('span'); s.className = 'av-wm'; s.textContent = n.nodeValue.trim(); a.replaceChild(s, n);
+        }
+      });
+    });
+  }
+  var pend = 0;
+  function later() { if (pend) return; pend = setTimeout(function () { pend = 0; wordmark(); scan(); }, 400); }
+  function lum(c) { var m = /rgba?\(([^)]*)\)/.exec(c || ''); if (!m) return null; var p = m[1].split(',').map(parseFloat); if (p.length > 3 && p[3] < 0.5) return null; return (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255; }
+  function theme() { var l = lum(getComputedStyle(document.body).backgroundColor); if (l === null) l = lum(getComputedStyle(document.documentElement).backgroundColor); if (l === null || l < 0.4) document.documentElement.classList.add('av-dark'); }
+  function init() { theme(); wordmark(); scan(); setTimeout(function () { wordmark(); scan(); }, 1800); try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true }); } catch (e) {} }
+  window.__avBrand = { led: function () { return led.length; }, anim: function () { return animCount; }, hue: HUE, max: MAX_LED };
+  if (document.readyState === 'complete') setTimeout(init, 300); else addEventListener('load', function () { setTimeout(init, 300); });
 })();
 </script>
 </body>
