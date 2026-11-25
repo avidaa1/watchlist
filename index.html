@@ -384,7 +384,7 @@ footer b{color:var(--cyan)}
     <div class="wordmark">
       <span class="glyph"></span>
       <div>
-        <h1>WATCHLIST</h1>
+        <h1 id="s-watchlist">WATCHLIST</h1>
         <div class="sub">AI in fiction · catalogued</div>
       </div>
     </div>
@@ -414,7 +414,7 @@ footer b{color:var(--cyan)}
 <section class="vs-section" id="versus">
   <div class="vs-head">
     <div class="eyebrow">// comparative analysis</div>
-    <h3>Machine vs. Machine</h3>
+    <h3 id="s-machine-vs-machine">Machine vs. Machine</h3>
     <p>Two fictional intelligences, side by side. Compare how each was built, what it wanted, how it saw us — and how it ended. Pick any two.</p>
   </div>
   <div class="vs-pickers">
@@ -732,7 +732,7 @@ function buildStory(s){
   let html = '<div class="story">';
   if(s.intro) html += '<p class="intro">'+escHtml(s.intro)+'</p>';
   if(s.chapters && s.chapters.length){
-    html += '<h4>Chapters &mdash; release order</h4>';
+    html += '<h4 id="s-chapters-release-order">Chapters &mdash; release order</h4>';
     html += s.chapters.map(c=>
       '<div class="chapter"><div class="cn">'+escHtml(c.n)+'</div>'
       +'<div><div class="ct">'+escHtml(c.t)+'</div>'
@@ -740,7 +740,7 @@ function buildStory(s){
     ).join("");
   }
   if(s.timelines && s.timelines.length){
-    html += '<div class="tmap"><h4>Timeline map &mdash; the branches</h4>';
+    html += '<div class="tmap"><h4 id="s-timeline-map-the-branches">Timeline map &mdash; the branches</h4>';
     html += s.timelines.map(t=>
       '<div class="tline"><div class="tk">'+escHtml(t.k)+'</div>'
       +'<div class="td">'+escHtml(t.d)+'</div></div>'
@@ -1431,7 +1431,7 @@ if(document.readyState==='complete')start();else addEventListener('load',start);
 addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/* AVIDAA shell: shared header (or floating pill) + footer with the "Last updated" stamp. No outside calls, no tracking.
    Template tokens are replaced when a page is built: Watchlist --av-knowledge Knowledge 2026-11-24 06:37 */
 (function(){
-  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-25 14:28',HOME='https://avidaa1.github.io/';
+  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-25 14:45',HOME='https://avidaa1.github.io/';
   var ARROW='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function build(){
     if(!document.body||document.querySelector('.av-footer'))return;
@@ -1760,6 +1760,112 @@ addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/*
   function init() { theme(); wordmark(); scan(); setTimeout(function () { wordmark(); scan(); }, 1800); try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true }); } catch (e) {} }
   window.__avBrand = { led: function () { return led.length; }, anim: function () { return animCount; }, hue: HUE, max: MAX_LED };
   if (document.readyState === 'complete') setTimeout(init, 300); else addEventListener('load', function () { setTimeout(init, 300); });
+})();
+</script>
+<script id="av-search-20261125">/* AVIDAA site search entry + deep-link highlight v1. No network, no tracking.
+   1) A search button in the shared header (or beside the home pill) and Ctrl+K or "/" open the home search (all pages, sections, tools, games).
+   2) Landing from a search result (#section-id or #find=Section%20name): scroll to the section and highlight it briefly. */
+(function () {
+  'use strict';
+  if (window.__avSearch) return; window.__avSearch = 1;
+  var HOME = 'https://avidaa1.github.io/', isHome = location.hostname.indexOf('github.io') >= 0 && /^\/?(index\.html)?$/.test(location.pathname);
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var css = '.av-sbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(5,8,24,.82);color:#fff;font:800 14px/1 system-ui,sans-serif;cursor:pointer;text-decoration:none;box-shadow:0 0 12px rgba(91,192,255,.3)}' +
+    '.av-sbtn:hover,.av-sbtn:focus-visible{outline:3px solid #FFD93D;outline-offset:2px}.av-sbtn svg{width:20px;height:20px}' +
+    '.av-sbtn.av-fixed{position:fixed;z-index:2147482500}' +
+    '.av-header .av-sbtn{margin-left:auto}' +
+    '@keyframes avHit{0%,100%{box-shadow:0 0 0 0 rgba(255,217,61,0)}30%{box-shadow:0 0 0 6px rgba(255,217,61,.75),0 0 30px 8px rgba(255,217,61,.55)}}' +
+    '.av-hit{outline:3px solid #FFD93D!important;outline-offset:4px;border-radius:6px;animation:avHit 1.1s ease-in-out 2}' +
+    '@media (prefers-reduced-motion:reduce){.av-hit{animation:none}}';
+  try { if (window.CSSStyleSheet && CSSStyleSheet.prototype.replaceSync && 'adoptedStyleSheets' in document) { var sh = new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sh]); } else throw 0; }
+  catch (e) { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }
+  function goSearch(q) { location.href = HOME + '?search=1' + (q ? '&q=' + encodeURIComponent(q) : ''); }
+  function mkBtn() {
+    var b = document.createElement('a'); b.className = 'av-sbtn'; b.href = HOME + '?search=1'; b.setAttribute('aria-label', 'Search all AVIDAA pages');
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span class="av-slbl">Search</span>';
+    return b;
+  }
+  var UI = 'a,button,input,select,textarea,[onclick],[role=button]';
+  function busy(l, t, w, h, self) {
+    for (var yy = 0; yy < 3; yy++) for (var xx = 0; xx < 3; xx++) {
+      var els = document.elementsFromPoint(l + w * (xx + .5) / 3, t + h * (yy + .5) / 3);
+      for (var q = 0; q < els.length; q++) { if (els[q] === self || self.contains(els[q])) continue; if (els[q].matches && els[q].matches(UI)) return true; }
+    } return false;
+  }
+  function place() {
+    if (isHome || document.querySelector('.av-sbtn')) return;
+    var b = mkBtn(), hdr = document.querySelector('.av-header');
+    if (hdr) { hdr.appendChild(b); var hb = b.getBoundingClientRect(); if (hb.right > innerWidth + 1 || hb.left < 0) { b.querySelector('.av-slbl').style.display = 'none'; } return; }
+    var pill = document.querySelector('.av-pill'); if (!pill) return;
+    b.classList.add('av-fixed'); document.body.appendChild(b);
+    var pr = pill.getBoundingClientRect(), bw = b.getBoundingClientRect(), W = bw.width, H = bw.height;
+    var spots = [[pr.right + 8, pr.top], [pr.left - W - 8, pr.top], [pr.left, pr.bottom + 8], [pr.left, pr.top - H - 8]];
+    for (var i = 0; i < spots.length; i++) {
+      var l = spots[i][0], t = spots[i][1]; if (l < 4 || t < 4 || l + W > innerWidth - 4 || t + H > innerHeight - 4) continue;
+      b.style.left = l + 'px'; b.style.top = t + 'px'; if (!busy(l, t, W, H, b)) return;
+    }
+    b.querySelector('.av-slbl').style.display = 'none'; b.remove();   /* no free spot: no button, keyboard shortcut still works */
+  }
+  document.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase(), tg = ((document.activeElement || {}).tagName || '');
+    if (isHome) return;
+    if ((e.ctrlKey || e.metaKey) && k === 'k') { e.preventDefault(); goSearch(); }
+    else if (k === '/' && !/INPUT|TEXTAREA|SELECT/.test(tg) && !(document.activeElement && document.activeElement.isContentEditable)) { e.preventDefault(); goSearch(); }
+  });
+  /* ---------- landing from a search result ---------- */
+  var INV = /[​-‏‪-‮⁠-⁤﻿­]/g;
+  function norm(t) { return String(t || '').replace(INV, '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim(); }
+  function visible(el) { return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+  function ntext(e) { return norm(e.innerText || e.textContent); }
+  function findByText(t) {
+    var n = norm(t).slice(0, 90), pri = 'h1,h2,h3,h4,h5,[role=tab],button,.tab,.nav-btn,dt,summary,strong,b,[class*="name"],[class*="title"]', best = null, i, x;
+    var els = document.querySelectorAll(pri);
+    for (i = 0; i < els.length; i++) { x = ntext(els[i]); if (x === n) return els[i]; if (!best && x.indexOf(n) === 0 && x.length < n.length + 30) best = els[i]; }
+    if (best) return best;
+    var all = document.body.querySelectorAll('*'), lim = Math.min(all.length, 8000);
+    for (i = 0; i < lim; i++) { var e = all[i]; if (e.children.length > 3 || e.tagName === 'SCRIPT' || e.tagName === 'STYLE') continue; x = ntext(e); if (x === n) return e; }
+    return null;
+  }
+  function esc(v) { return String(v).replace(/["\\]/g, ''); }
+  function controllers(id) {
+    var keys = Array.isArray(id) ? id.slice() : [id]; id = keys[0] || ''; var k2 = id.replace(/^(page|pg|p|panel|tab|sec|section|view|screen)[-_]/i, ''); if (k2 && k2 !== id) keys.push(k2);
+    var sel = [];
+    keys.forEach(function (k) { k = esc(k);
+      sel.push('[aria-controls="' + k + '"]', '[data-tab="' + k + '"]', '[data-target="' + k + '"]', '[data-panel="' + k + '"]', '[data-page="' + k + '"]', '[data-p="' + k + '"]', '[data-view="' + k + '"]', '[data-section="' + k + '"]', 'a[href="#' + k + '"]',
+        '[onclick*="\'' + k + '\'"]', '[onclick*="\\"' + k + '\\""]', '[data-go="' + k + '"]', '[data-nav="' + k + '"]', '[data-open="' + k + '"]', '#nb-' + k, '#nav-' + k, '#tab-' + k, '#btn-' + k, '#np-' + k, '#t-' + k, '#n-' + k);
+    });
+    try { return [].slice.call(document.querySelectorAll(sel.join(','))); } catch (e) { return []; }
+  }
+  function reveal(el) {
+    for (var tries = 0; tries < 5 && !visible(el); tries++) {
+      var hid = null;
+      for (var p = el; p && p !== document.body; p = p.parentElement) { if (!visible(p)) { hid = p; } else if (hid) break; }
+      var cur = el, target = null; for (var q = el; q && q !== document.body; q = q.parentElement) { if (!visible(q) && (q.id || (q.getAttribute && (q.getAttribute('data-path') || q.getAttribute('data-cat'))))) { target = q; } }
+      if (!target) target = hid; if (!target) break;
+      var ks = []; if (target.id) ks.push(target.id); ['data-path', 'data-cat', 'data-tab', 'data-page', 'data-id', 'data-key'].forEach(function (at) { var v = target.getAttribute && target.getAttribute(at); if (v) ks.push(v); }); if (!ks.length) break;
+      var cs = controllers(ks); if (!cs.length) break;
+      for (var c = 0; c < cs.length; c++) { try { cs[c].click(); } catch (e) {} if (visible(el)) return; }
+    }
+  }
+  function flash(el) {
+    try { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } catch (e) { el.scrollIntoView(); }
+    el.classList.add('av-hit'); setTimeout(function () { el.classList.remove('av-hit'); }, 3200);
+  }
+  function land() {
+    var h = location.hash; if (!h || h.length < 2) return;
+    var want = null, byId = null;
+    try { if (h.indexOf('#find=') === 0) want = decodeURIComponent(h.slice(6)); else byId = decodeURIComponent(h.slice(1)); } catch (e) { return; }
+    var tries = 0;
+    (function attempt() {
+      var el = byId ? document.getElementById(byId) : (want ? findByText(want) : null);
+      if (el) { if (!visible(el)) reveal(el); if (visible(el)) { flash(el); return; } }
+      if (++tries < 22) setTimeout(attempt, 400);
+    })();
+  }
+  window.__avSearch = { goSearch: goSearch, land: land, findByText: findByText };
+  function init() { place(); setTimeout(place, 1500); land(); }
+  if (document.readyState === 'complete') setTimeout(init, 200); else addEventListener('load', function () { setTimeout(init, 200); });
+  addEventListener('hashchange', land);
 })();
 </script>
 </body>
