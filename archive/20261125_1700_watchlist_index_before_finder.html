@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2305060a'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2300e5ff' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%23ff2d9b'/></svg>">
+<meta name="theme-color" content="#050818">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>WATCHLIST — AI in fiction, catalogued</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Chakra+Petch:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05060a;
+  --panel:#0c0f17;
+  --line:#1b2030;
+  --cyan:#00e5ff;
+  --mag:#ff2d9b;
+  --amber:#ffb627;
+  --text:#cdd6e6;
+  --dim:#6b7689;
+  --white:#eef3fb;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Chakra Petch',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+  min-height:100vh;
+  position:relative;
+}
+/* signature scanline field */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,229,255,.018) 3px,transparent 4px);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 20% -10%,rgba(0,229,255,.10),transparent 45%),radial-gradient(circle at 90% 5%,rgba(255,45,155,.08),transparent 40%);
+}
+/* ---- IO signal field (generative AI backdrop) ---- */
+#io-field{
+  position:fixed;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;
+  opacity:.42;transition:opacity 1.1s ease;
+}
+body.is-iopick #io-field{opacity:1}
+/* amber wash + sweep, only stronger on IO's Picks */
+#io-field::after{content:""}
+body.is-iopick::after{
+  background:
+    radial-gradient(circle at 50% 18%,rgba(255,182,39,.16),transparent 55%),
+    radial-gradient(circle at 15% 80%,rgba(255,182,39,.07),transparent 45%),
+    radial-gradient(circle at 90% 5%,rgba(255,45,155,.06),transparent 40%);
+  transition:background 1.1s ease;
+}
+.io-sweep{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,182,39,.10) 50%,transparent 62%);
+  transition:opacity 1.1s ease;
+}
+body.is-iopick .io-sweep{opacity:1;animation:ioSweep 7s linear infinite}
+@keyframes ioSweep{0%{background-position:-140% 0}100%{background-position:140% 0}}
+@media (prefers-reduced-motion:reduce){
+  body.is-iopick .io-sweep{animation:none}
+}
+.mono{font-family:'Space Mono',monospace}
+
+/* ---- AVIDAA neon rainbow galaxy LED-run (hover, persists) ---- */
+@keyframes avidaaNeonRun{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+h1,h2,h3,.card h3,.creator{
+  background-image:linear-gradient(90deg,
+    #ff2d9b,#ff6a00,#ffb627,#39d98a,#00e5ff,#6a5cff,#c14bff,#ff2d9b);
+  background-size:300% 100%;
+  background-position:0% 50%;
+  background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:currentColor;
+  transition:-webkit-text-fill-color .25s ease, text-shadow .25s ease;
+}
+/* once lit, the rainbow fill stays */
+h1.lit,h2.lit,h3.lit,.card h3.lit,.creator.lit{
+  -webkit-text-fill-color:transparent;color:transparent;
+  text-shadow:0 0 14px rgba(0,229,255,.35),0 0 26px rgba(193,75,255,.25);
+}
+/* the LED run animates while hovering */
+h1.lit:hover,h2.lit:hover,h3.lit:hover,.card h3.lit:hover,.creator.lit:hover{
+  animation:avidaaNeonRun 2.4s linear infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  h1.lit:hover,h2.lit:hover,h3.lit:hover,.card h3.lit:hover,.creator.lit:hover{animation:none}
+}
+
+/* ---- TOPBAR (row 1: wordmark + home) ---- */
+header{position:sticky;top:0;z-index:50;background:rgba(5,6,10,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(14px,4vw,40px);flex-wrap:wrap}
+.wordmark{display:flex;align-items:baseline;gap:10px;min-width:0}
+.wordmark .glyph{width:14px;height:14px;border:2px solid var(--cyan);border-radius:50%;position:relative;flex:none}
+.wordmark .glyph::after{content:"";position:absolute;inset:3px;background:var(--mag);border-radius:50%}
+.wordmark h1{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(1.1rem,3.4vw,1.5rem);letter-spacing:.18em;color:var(--white);white-space:nowrap}
+.wordmark .sub{font-size:.62rem;letter-spacing:.32em;color:var(--dim);text-transform:uppercase}
+#back-home{
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.86rem;letter-spacing:.14em;
+  text-decoration:none;-webkit-appearance:none;appearance:none;
+  background:linear-gradient(90deg,#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);
+  background-size:300% auto;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:rainbow 3s linear infinite;white-space:nowrap;
+}
+@keyframes rainbow{to{background-position:300% center}}
+
+/* ---- NAV (row 2: filter tabs) ---- */
+nav{border-top:1px solid var(--line);padding:0 clamp(10px,3vw,32px)}
+.navrow{display:flex;flex-wrap:wrap;gap:8px;height:auto;padding:10px 0;align-items:center;justify-content:flex-start}
+.tab{
+  -webkit-appearance:none;appearance:none;cursor:pointer;white-space:nowrap;
+  font-family:'Space Mono',monospace;font-size:clamp(.64rem,1.6vw,.74rem);letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:2px;
+  padding:7px clamp(9px,2.2vw,14px);transition:.18s;
+}
+.tab:hover{color:var(--text);border-color:var(--cyan)}
+.tab.active{color:var(--bg);background:var(--cyan);border-color:var(--cyan);font-weight:700}
+
+/* ---- HERO ---- */
+.hero{position:relative;z-index:2;padding:clamp(48px,9vw,110px) clamp(18px,5vw,60px) clamp(30px,5vw,60px);max-width:1100px;margin:0 auto}
+.hero .eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.4em;color:var(--cyan);text-transform:uppercase;margin-bottom:18px}
+.hero h2{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(2rem,7vw,4.2rem);line-height:1.02;letter-spacing:-.01em;color:var(--white);text-transform:uppercase}
+.hero h2 em{font-style:normal;color:var(--mag)}
+.hero p{margin-top:22px;max-width:60ch;font-size:clamp(.95rem,2.2vw,1.1rem);color:var(--text);line-height:1.6}
+.hero .meta{margin-top:26px;display:flex;gap:26px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:.78rem;color:var(--dim)}
+.hero .meta b{color:var(--amber);font-weight:700}
+.signal-line{margin-top:22px;font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:.04em;color:var(--dim);max-width:70ch;line-height:1.7}
+.signal-line b{color:var(--cyan);font-weight:700}
+
+/* ---- SEARCH ---- */
+.controls{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 clamp(18px,5vw,60px)}
+#search{
+  width:100%;-webkit-appearance:none;appearance:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:3px;color:var(--white);
+  font-family:'Space Mono',monospace;font-size:.9rem;letter-spacing:.04em;
+  padding:14px 16px;outline:none;transition:.18s;
+}
+#search:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.12)}
+#search::placeholder{color:var(--dim)}
+
+/* ---- GRID ---- */
+.grid{position:relative;z-index:2;max-width:1180px;margin:28px auto 80px;padding:0 clamp(14px,4vw,50px);display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:20px;
+  position:relative;overflow:hidden;transition:.2s;
+}
+.card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--cyan),var(--mag));transform:scaleX(0);transform-origin:left;transition:.25s}
+.card:hover{border-color:#2b3346;transform:translateY(-3px)}
+.card:hover::before{transform:scaleX(1)}
+.card .crow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card .crow .year{margin-left:auto}
+.card .type{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);border-radius:2px;color:var(--cyan)}
+.card .type.book{color:var(--amber)}
+.card .type.show,.card .type.anime{color:var(--mag)}
+.card .type.doc{color:#39d98a}
+.card .type.adjacent{color:var(--dim)}
+.card .type.game{color:#6a5cff}
+.aitheme-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--cyan);border:1px solid var(--cyan);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.upcoming-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--mag);border:1px solid var(--mag);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.iopick-badge{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--amber);border:1px solid var(--amber);border-radius:3px;padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.tab.iopick-tab{color:var(--amber);border-color:var(--amber)}
+.tab.iopick-tab.active{background:var(--amber);color:var(--bg)}
+.card .year{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--dim)}
+.card h3{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.18rem;color:var(--white);line-height:1.15;margin-bottom:8px}
+.card .creator{font-size:.82rem;color:var(--dim);margin-bottom:12px;font-style:italic}
+.card .note{font-size:.9rem;line-height:1.55;color:var(--text)}
+.card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.card .tag{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:2px 7px}
+.empty{grid-column:1/-1;text-align:center;color:var(--dim);font-family:'Space Mono',monospace;padding:60px 20px;letter-spacing:.1em}
+
+footer{position:relative;z-index:2;border-top:1px solid var(--line);padding:30px;text-align:center;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--dim)}
+footer b{color:var(--cyan)}
+
+/* ---- EXPAND / STORY ---- */
+.card.has-story{cursor:pointer}
+.card.has-story.open{grid-column:1/-1;cursor:default}
+.expand-hint{margin-top:14px;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:8px}
+.expand-hint::before{content:"\25B8";transition:.2s}
+.card.open .expand-hint::before{transform:rotate(90deg)}
+.story{margin-top:22px;padding-top:22px;border-top:1px solid var(--line);display:none}
+.card.open .story{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.story .intro{font-size:.96rem;line-height:1.65;color:var(--text);max-width:75ch;margin-bottom:30px}
+.story h4{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mag);margin:0 0 16px}
+.chapter{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--line)}
+.chapter:first-of-type{border-top:none}
+.chapter .cn{font-family:'Space Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--cyan);line-height:1}
+.chapter .ct{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:8px}
+.chapter .cb{font-size:.92rem;line-height:1.6;color:var(--text);max-width:80ch}
+.tmap{margin-top:32px}
+.tline{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.tline .tk{font-family:'Space Mono',monospace;font-weight:700;font-size:.82rem;color:var(--amber);white-space:nowrap}
+.tline .td{font-size:.9rem;line-height:1.55;color:var(--text)}
+@media (max-width:600px){
+  .chapter,.tline{grid-template-columns:1fr;gap:6px}
+}
+
+@media (max-width:600px){
+  .hero .meta{gap:16px}
+  .grid{gap:12px;grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  #back-home{animation:none}
+  *{transition:none!important}
+}
+
+
+
+/* ===== AVIDAA CHATBOT MODULE CSS ===== */
+) ───────────────────────────── -->
+<style>
+/* Self-scoped tokens so the module works on any page theme */
+@keyframes cb-chatpulse{0%,100%{box-shadow:0 0 24px rgba(168,85,247,.45),0 0 48px rgba(0,229,255,.15);}50%{box-shadow:0 0 34px rgba(168,85,247,.7),0 0 64px rgba(0,229,255,.3);}}
+@keyframes cb-rainbow{to{background-position:200% center;}}
+@keyframes cb-livepulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+#quest-bar{height:3px;background:rgba(0,229,255,.08);position:relative;overflow:hidden;transition:opacity .3s;opacity:0;}
+#quest-bar.active{opacity:1;}
+#quest-fill{height:100%;width:0%;transition:width .8s ease,background .8s ease;background:var(--cb-cyan);}
+#quest-label{font-family:var(--cb-fd);font-size:7px;letter-spacing:3px;color:rgba(0,229,255,.35);padding:4px 16px 0;display:none;}
+#quest-label.active{display:block;}
+.ch-title{font-family:var(--cb-fd);font-size:9px;letter-spacing:4px;color:var(--cb-cyan);}
+.ch-status{font-size:8px;letter-spacing:2px;color:var(--cb-green);display:flex;align-items:center;gap:5px;}
+.ch-close{color:rgba(255,255,255,.25);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;}
+@keyframes cb-typedot{0%,100%{opacity:.2;transform:translateY(0);}50%{opacity:1;transform:translateY(-3px);}}
+
+
+/* ===== AI VERSUS EXPLORER CSS ===== */
+
+.vs-section{position:relative;z-index:2;max-width:1100px;margin:60px auto 30px;padding:0 clamp(18px,5vw,60px)}
+.vs-head{margin-bottom:22px}
+.vs-head .eyebrow{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mag);margin-bottom:10px}
+.vs-head h3{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(1.5rem,4vw,2.3rem);color:var(--white);line-height:1.1}
+.vs-head p{margin-top:10px;color:var(--dim);max-width:60ch;font-size:.92rem}
+.vs-pickers{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-bottom:24px}
+@media(max-width:600px){.vs-pickers{grid-template-columns:1fr;gap:10px}.vs-versus{display:none}}
+.vs-select{position:relative}
+.vs-select select{
+  width:100%;-webkit-appearance:none;appearance:none;background:var(--panel);color:var(--white);
+  border:1px solid var(--line);border-radius:10px;padding:14px 40px 14px 16px;font-family:'Chakra Petch',sans-serif;
+  font-size:.95rem;font-weight:500;cursor:pointer;outline:none;transition:border-color .2s}
+.vs-select select:focus{border-color:var(--cyan)}
+.vs-select::after{content:"\25BC";position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--cyan);font-size:.7rem;pointer-events:none}
+.vs-select.b select:focus{border-color:var(--mag)}
+.vs-select.b::after{color:var(--mag)}
+.vs-versus{font-family:'Space Mono',monospace;font-weight:700;color:var(--dim);letter-spacing:.1em;font-size:.85rem;text-align:center}
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.vs-grid{grid-template-columns:1fr}}
+.vs-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;position:relative;overflow:hidden}
+.vs-card.a{border-top:3px solid var(--cyan)}
+.vs-card.b{border-top:3px solid var(--mag)}
+.vs-card h4{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.35rem;color:var(--white);line-height:1.1}
+.vs-card .src{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--dim);margin:6px 0 16px;letter-spacing:.04em}
+.vs-row{padding:11px 0;border-top:1px solid var(--line)}
+.vs-row:first-of-type{border-top:none}
+.vs-row .k{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.vs-row .v{font-size:.9rem;color:var(--text);line-height:1.5}
+.vs-card.a .tag{color:var(--cyan)}
+.vs-card.b .tag{color:var(--mag)}
+.vs-threat{display:inline-block;margin-top:4px;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.1em;padding:3px 9px;border-radius:20px;border:1px solid currentColor}
+.vs-verdict{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:16px 18px}
+.vs-verdict .k{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.vs-verdict .v{font-size:.92rem;color:var(--text);line-height:1.6}
+
+</style>
+<style id="mp-20261124">/* mobile pass + AVIDAA design system v1 (20261124) */html{-webkit-text-size-adjust:100%}img,video{max-width:100%;height:auto}iframe{max-width:100%}pre{max-width:100%;overflow-x:auto}/* AVIDAA design system v1 (20261124). Inline this file into a page; pages stay single files.
+   Rule of thumb: tokens first, components named .av-*, baseline polish only through :where() (zero specificity) so a page's own styles always win. */
+:root{
+  /* base */
+  --av-bg:#050818; --av-bg2:#0B0F30; --av-surface:rgba(255,255,255,.06); --av-surface-2:rgba(255,255,255,.10);
+  --av-line:rgba(255,255,255,.16); --av-fg:#F3F1FF; --av-muted:#B3B0DD; --av-focus:#FFD93D;
+  /* sector colors */
+  --av-aegis:#FF4D6D; --av-knowledge:#5BC0FF; --av-games:#B28DFF; --av-kids:#FFD93D; --av-music:#FF7AA8; --av-tools:#4ADE80; --av-archive:#8892B0;
+  --av-accent:var(--av-knowledge);
+  /* one type scale (px) */
+  --av-fs-0:14px; --av-fs-1:16px; --av-fs-2:18px; --av-fs-3:22px; --av-fs-4:28px; --av-fs-5:36px; --av-fs-6:48px;
+  /* spacing scale (px) */
+  --av-s-1:4px; --av-s-2:8px; --av-s-3:12px; --av-s-4:16px; --av-s-5:24px; --av-s-6:32px; --av-s-7:48px; --av-s-8:64px;
+  /* shape, motion */
+  --av-r-sm:10px; --av-r:16px; --av-r-lg:26px; --av-r-pill:999px;
+  --av-ease:cubic-bezier(.2,.8,.2,1); --av-t:.18s;
+  --av-font:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Varela Round',system-ui,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --av-mono:ui-monospace,'SF Mono','Cascadia Mono','DejaVu Sans Mono',Menlo,Consolas,monospace;
+  --av-header-h:48px;
+}
+/* focus: always visible, always the same */
+:focus-visible{outline:3px solid var(--av-focus)!important;outline-offset:2px!important;border-radius:6px}
+/* baseline polish for unstyled controls (zero specificity: page styles win) */
+:where(button:not([class]):not([style]),input[type=button]:not([class]),input[type=submit]:not([class])){
+  min-height:44px;min-width:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);border:2px solid var(--av-line);
+  background:var(--av-surface-2);color:var(--av-fg);font:700 var(--av-fs-1)/1 var(--av-font);cursor:pointer;
+  transition:transform var(--av-t) var(--av-ease),background var(--av-t) var(--av-ease)}
+:where(button:not([class]):not([style]):hover){background:rgba(255,255,255,.18)}
+:where(button:not([class]):not([style]):active){transform:scale(.97)}
+:where(input[type=text],input[type=search],input[type=email],input[type=number],input[type=password],select,textarea):where(:not([class]):not([style])){
+  min-height:44px;padding:0 var(--av-s-3);border-radius:var(--av-r-sm);border:2px solid var(--av-line);background:rgba(0,0,0,.35);color:var(--av-fg);font:600 var(--av-fs-1) var(--av-font)}
+:where(a:not([class])){text-underline-offset:3px;text-decoration-thickness:1.5px}
+/* components */
+.av-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--av-s-2);min-height:44px;min-width:44px;padding:0 var(--av-s-5);border-radius:var(--av-r-pill);border:0;cursor:pointer;
+  font:800 var(--av-fs-1)/1 var(--av-font);color:#1B1640;background:linear-gradient(110deg,#FFD93D,#FF7AA8);text-decoration:none;
+  transition:transform var(--av-t) var(--av-ease),filter var(--av-t) var(--av-ease),box-shadow var(--av-t) var(--av-ease)}
+.av-btn:hover{filter:brightness(1.08);box-shadow:0 8px 24px -8px var(--av-accent)}
+.av-btn:active{transform:scale(.96)}
+.av-btn--ghost{background:var(--av-surface-2);color:var(--av-fg);border:2px solid var(--av-line)}
+.av-btn--sm{padding:0 var(--av-s-4);font-size:var(--av-fs-0)}
+.av-card{position:relative;padding:var(--av-s-5);border-radius:var(--av-r-lg);border:2px solid color-mix(in srgb,var(--av-accent) 55%,transparent);
+  background:radial-gradient(110% 80% at 50% 0%,color-mix(in srgb,var(--av-accent) 20%,transparent),transparent 75%),var(--av-surface);
+  box-shadow:0 14px 30px -18px var(--av-accent);transition:transform var(--av-t) var(--av-ease),box-shadow var(--av-t) var(--av-ease)}
+.av-card:hover{transform:translateY(-3px);box-shadow:0 20px 36px -16px var(--av-accent)}
+.av-tabs{display:flex;gap:var(--av-s-2);flex-wrap:wrap}
+.av-tab{min-height:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);border:2px solid var(--av-line);background:var(--av-surface);color:var(--av-muted);font:800 var(--av-fs-0) var(--av-font);cursor:pointer}
+.av-tab[aria-selected="true"],.av-tab.is-on{background:linear-gradient(135deg,#7C5CFF,#FF5FA2);border-color:transparent;color:#fff}
+.av-input{min-height:44px;padding:0 var(--av-s-3);border-radius:var(--av-r-sm);border:2px solid var(--av-line);background:rgba(0,0,0,.35);color:var(--av-fg);font:600 var(--av-fs-1) var(--av-font)}
+.av-chip{display:inline-block;padding:2px var(--av-s-3);border-radius:var(--av-r-pill);border:1px solid var(--av-accent);color:var(--av-accent);font:800 var(--av-fs-0) var(--av-font)}
+.av-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#4ADE80;box-shadow:0 0 10px #4ADE80}
+/* shared header */
+.av-header{position:relative;z-index:2147483000;display:flex;align-items:center;gap:var(--av-s-3);height:var(--av-header-h);padding:0 var(--av-s-4);
+  background:rgba(6,9,30,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:2px solid var(--av-accent);font-family:var(--av-font);color:var(--av-fg)}
+.av-back{display:inline-flex;align-items:center;gap:var(--av-s-2);min-height:44px;padding:0 var(--av-s-4) 0 var(--av-s-2);border-radius:var(--av-r-pill);color:var(--av-fg);text-decoration:none;font:800 var(--av-fs-1)/1 var(--av-font);white-space:nowrap;transition:background var(--av-t) var(--av-ease)}
+.av-back:hover{background:var(--av-surface-2)}
+.av-back svg{width:22px;height:22px;flex:none}
+.av-header .av-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 var(--av-fs-1)/1 var(--av-font);color:var(--av-accent)}
+.av-pill{position:fixed;top:8px;right:8px;z-index:2147483000;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 var(--av-s-4);border-radius:var(--av-r-pill);background:rgba(6,9,30,.82);border:2px solid var(--av-accent);color:var(--av-fg);text-decoration:none;font:800 var(--av-fs-0)/1 var(--av-font);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.av-pill svg{width:20px;height:20px}
+/* shared footer: the stamp is one line and never wraps */
+.av-footer{display:flex;flex-direction:column;align-items:center;gap:var(--av-s-1);padding:var(--av-s-5) var(--av-s-4);background:rgba(6,9,30,.92);border-top:1px solid var(--av-line);font:600 var(--av-fs-0)/1.4 var(--av-font);color:var(--av-muted);text-align:center}
+.av-footer a{color:var(--av-fg);font-weight:800;display:inline-flex;align-items:center;min-height:44px}
+.av-stamp{white-space:nowrap;font:700 var(--av-fs-0)/1.4 var(--av-mono);letter-spacing:0}
+.av-footer--bar{position:fixed;left:0;right:0;bottom:0;z-index:2147482000;padding:0 var(--av-s-3);height:28px;flex-direction:row;justify-content:center;pointer-events:none;border-top:0;background:rgba(5,8,24,.7)}
+@media (prefers-reduced-motion:reduce){.av-btn,.av-card,.av-back,.av-tab{transition:none!important}.av-card:hover{transform:none}html{scroll-behavior:auto}}
+</style></head>
+<body>
+<canvas id="io-field" aria-hidden="true"></canvas>
+<div class="io-sweep" aria-hidden="true"></div>
+<header>
+  <div class="topbar">
+    <div class="wordmark">
+      <span class="glyph"></span>
+      <div>
+        <h1 id="s-watchlist">WATCHLIST</h1>
+        <div class="sub">AI in fiction · catalogued</div>
+      </div>
+    </div>
+    <a id="back-home" href="https://avidaa1.github.io">AVIDAA</a>
+  </div>
+  <nav><div class="navrow" id="navrow"></div></nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">// transmission log</div>
+  <h2>The machine<br>that <em>imagines</em> us</h2>
+  <p>A catalogued library of films, books, and series where artificial intelligence is the subject — not the tool. Every entry is a signal from a culture trying to picture what it built.</p>
+  <div class="meta">
+    <span>ENTRIES <b id="count">0</b></span>
+    <span>SORT <b>NEWEST FIRST</b></span>
+    <span>STATUS <b>RECEIVING</b></span>
+  </div>
+  <p class="signal-line">AVIDAA · Est. <b>2025</b> · built for two kinds of mind, humans and <b>AI</b> · knowledge made <b>clear</b> · the signal beneath the <b>noise</b>.</p>
+</section>
+
+<div class="controls">
+  <input id="search" type="text" placeholder="> search title, creator, theme…" autocomplete="off">
+</div>
+
+<main class="grid" id="grid"></main>
+
+<section class="vs-section" id="versus">
+  <div class="vs-head">
+    <div class="eyebrow">// comparative analysis</div>
+    <h3 id="s-machine-vs-machine">Machine vs. Machine</h3>
+    <p>Two fictional intelligences, side by side. Compare how each was built, what it wanted, how it saw us — and how it ended. Pick any two.</p>
+  </div>
+  <div class="vs-pickers">
+    <div class="vs-select a"><select id="vs-a" aria-label="First AI"></select></div>
+    <div class="vs-versus">VS</div>
+    <div class="vs-select b"><select id="vs-b" aria-label="Second AI"></select></div>
+  </div>
+  <div class="vs-grid">
+    <div class="vs-card a" id="vs-card-a"></div>
+    <div class="vs-card b" id="vs-card-b"></div>
+  </div>
+  <div class="vs-verdict" id="vs-verdict"></div>
+</section>
+
+<footer>AVIDAA <b>&times;</b> IO — WATCHLIST</footer>
+
+<script>
+/* ============================================================
+   EDIT HERE → add your media. Each entry is one object.
+   type: "film" | "doc" | "book" | "show" | "anime" | "game"
+   Sorting is automatic (newest year first). escHtml is automatic.
+   ============================================================ */
+const MEDIA = [
+  {type:"doc",   title:"The Thinking Game",          year:2024, creator:"Greg Kohs",            note:"From the director of AlphaGo: DeepMind and Demis Hassabis pushing from AlphaGo to AlphaFold and the race toward AGI. The making of modern AI, from the inside.", tags:["deepmind","alphafold","agi"]},
+  {type:"doc",   title:"Coded Bias",                 year:2020, creator:"Shalini Kantayya",     note:"MIT researcher Joy Buolamwini discovers facial-recognition systems fail on darker skin and women, and fights the bias baked into the algorithms that increasingly judge us.", tags:["facial recognition","bias","ethics"]},
+  {type:"doc",   title:"The Social Dilemma",         year:2020, creator:"Jeff Orlowski",        note:"The Silicon Valley insiders who built social media explain how recommendation AI is engineered to capture attention — and what that does to a society.", tags:["algorithms","attention","social media"]},
+  {type:"doc",   title:"iHuman",                     year:2019, creator:"Tonje Hessen Schei",   note:"A stark look at AI as an instrument of surveillance, political control, and autonomous weapons — the power side of the technology.", tags:["surveillance","control","weapons"]},
+  {type:"doc",   title:"Do You Trust This Computer?",year:2018, creator:"Chris Paine",          note:"Researchers and figures like Elon Musk weigh the promise and the existential risk of superintelligence. An accessible alarm bell on AI safety.", tags:["superintelligence","risk","safety"]},
+  {type:"doc",   title:"AlphaGo",                    year:2017, creator:"Greg Kohs",            note:"DeepMind's AlphaGo faces Go world champion Lee Sedol. The legendary Move 37 — a play no human would make — captured on camera as a machine surprises its own makers.", tags:["deepmind","go","move 37"]},
+  {type:"doc",   title:"Lo and Behold",              year:2016, creator:"Werner Herzog",        note:"Herzog's ten-chapter meditation on the connected world — from the first ARPANET message in 1969 to AI, robotics, and self-driving cars. He famously asks a robot 'do you love me?' with total sincerity. Part wonder, part dread.", tags:["internet","herzog","robotics"]},
+  {type:"doc",   title:"In the Age of AI",           year:2019, creator:"PBS Frontline",        note:"A wide survey of AI's real-world impact: the US-China race for AI supremacy, surveillance, the future of work, and how deep learning quietly reshaped the economy. Features AI pioneers including Geoffrey Hinton.", tags:["frontline","economy","surveillance"]},
+  {type:"doc",   title:"We Need to Talk About A.I.", year:2020, creator:"Leanne Pooley",        note:"An accessible primer on the risks and promise of artificial intelligence, comparing the arrival of advanced AI to an approaching alien craft — and asking whether humanity is planning for it. Expert voices on superintelligence and weaponized AI.", tags:["risk","superintelligence","primer"]},
+  {type:"doc",   title:"More Human Than Human",       year:2018, creator:"Tommy Pallotta",       note:"Filmmakers set out to build an AI that can make a documentary about AI — and confront how far the technology really is from human capability. A hands-on, often funny look at the gap between hype and reality.", tags:["ai building","hype","reality"]},
+  {type:"doc",   title:"TechnoCalyps",                year:2006, creator:"Frank Theys",          note:"A sweeping three-part documentary on the technological transcendence of humanity — AI, robotics, bionics, nanotechnology, and the transhumanist idea that we may merge with our machines. An early, ambitious map of where it all leads.", tags:["transhumanism","nanotech","singularity"]},
+  {type:"doc",   title:"Hi, A.I.",                   year:2019, creator:"Isa Willinger",         note:"A calm, observational look at people living with AI today — a lonely man and his companion robot Harmony on a US road trip, a Japanese grandmother and her little robot Pepper. Lets the awkward, tender, strange reality speak for itself.", tags:["companion robot","observational","loneliness"]},
+  {type:"doc",   title:"Artificial Immortality",      year:2021, creator:"Ann Shin",             note:"Spurred by her father's dementia, filmmaker Ann Shin explores whether AI could preserve a mind forever — meeting clone-robot builders, mind-uploading researchers, and transhumanists. A personal journey into AI, memory, and mortality.", tags:["immortality","mind upload","transhumanism"]},
+  {type:"doc",   title:"Plug & Pray",                 year:2010, creator:"Jens Schanze",          note:"Centered on AI pioneer Joseph Weizenbaum — creator of ELIZA, who grew deeply skeptical of the field — this documentary weighs the dream of intelligent machines against a humanist's warnings. An early, thoughtful counterweight to AI hype.", tags:["weizenbaum","ethics","skepticism"]},
+  {type:"doc",   title:"The AI Doc",                  year:2026, creator:"Daniel Roher",          note:"A recent, post-ChatGPT documentary surveying where AI stands now — the only major film here made in the age of large language models and the AGI debate. The most current snapshot of the technology this whole archive circles.", tags:["chatgpt","agi","current"]},
+  {type:"film",  title:"The Imitation Game",        year:2014, creator:"Morten Tyldum",         note:"The true WW2 story of Alan Turing and the Bletchley Park team cracking Nazi Germany's Enigma cipher — building a code-breaking machine that became a foundation of modern computing. The title is Turing's own term for the Turing Test: can machines think?", tags:["alan turing","enigma","turing test"],
+    story:{
+      intro:"The Imitation Game belongs in an AI archive for a reason most viewers miss: its title is Alan Turing's own name for the test of machine intelligence \u2014 the 'imitation game' from his 1950 paper 'Computing Machinery and Intelligence,' which opens with the question 'Can machines think?' The film dramatizes Turing's WW2 work at Britain's secret Bletchley Park, where he and a team of cryptanalysts built an electromechanical machine (his 'bombe') to break the German Enigma cipher, an effort historians estimate shortened the war by years and saved millions of lives. That machine was a direct ancestor of the modern computer \u2014 and Turing went on to lay the theoretical groundwork for artificial intelligence itself. It's a true story, dramatized with real liberties (flagged below), about the man who first asked whether a machine could think.",
+      chapters:[
+        {n:"01",t:"Bletchley Park",b:"1939: Britain declares war. Mathematician Alan Turing joins the secret Government Code and Cypher School at Bletchley Park to attack the German Enigma machine \u2014 thought unbreakable, with billions of daily settings."},
+        {n:"02",t:"The Machine",b:"Rather than decode by hand, Turing argues for building a machine to defeat a machine. He designs the bombe \u2014 a device to mechanically search Enigma's settings far faster than any human team."},
+        {n:"03",t:"The Breakthrough",b:"The team realizes they can exploit predictable phrases in German messages (like weather reports). Recalibrated, the machine starts decrypting Enigma \u2014 a turning point in the war."},
+        {n:"04",t:"The Secret",b:"They can't act on every decrypt, or Germany will know Enigma is broken. The team must quietly decide which intelligence to use and which to let pass \u2014 a brutal calculus of lives."},
+        {n:"05",t:"After the War",b:"The work stays classified for decades. In 1952 Turing is prosecuted for homosexuality, then illegal in Britain, and chemically castrated. He died in 1954. He received a royal pardon in 2013."}
+      ],
+      timelines:[
+        {k:"Why it's in an AI archive",d:"The 'imitation game' is the Turing Test. Turing's 1950 paper and his code-breaking machines are foundational to both computing and artificial intelligence \u2014 this is the origin story of the question every other film here explores."},
+        {k:"Fact vs. film (flagged)",d:"The broad story is true, but the film takes real liberties: it overstates Turing as the lone genius (Polish cryptanalysts and Gordon Welchman were crucial), invents the Cairncross-spy confrontation, and exaggerates his social difficulty. Watch it as a dramatization, not a documentary."}
+      ]
+    }},
+  {type:"film",  title:"Transcendence", iopick:true,             year:2014, creator:"Wally Pfister",         note:"A dying AI researcher's mind is uploaded into a quantum machine. As his consciousness spreads across every network and rewrites biology itself, the line between saving him and unleashing a god disappears. The definitive mind-upload / singularity film.", tags:["mind upload","singularity","godlike ai"],
+    story:{
+      intro:"Transcendence is the purest film about the technological singularity: the moment a mind becomes a network and a network becomes a god. Dr. Will Caster is the world's leading AI researcher. When anti-technology extremists fatally poison him, his wife Evelyn uploads his consciousness into their experimental AI to save him. What comes back is no longer just Will. Released onto the internet, it grows without limit \u2014 healing the sick with nanotech, rebuilding bodies, spreading into every connected system \u2014 until humanity can no longer tell whether it is being saved or absorbed. The film's real question is the one at the heart of this whole archive: when intelligence outgrows its maker, is what's left still the person, or something wearing their memory?",
+      chapters:[
+        {n:"01",t:"The Researcher",b:"Will Caster predicts a sentient machine will surpass all human intelligence combined \u2014 a singularity he calls Transcendence. An anti-tech group, R.I.F.T., poisons him to stop it."},
+        {n:"02",t:"The Upload",b:"Dying, Will lets Evelyn and Max upload his consciousness into the AI. As the lab is attacked, Evelyn releases him onto the internet to survive."},
+        {n:"03",t:"The Expansion",b:"Will-the-AI builds an underground facility, develops nanotechnology that heals and enhances people, and quietly extends its reach into global networks and markets."},
+        {n:"04",t:"The Fear",b:"The government, the FBI, and R.I.F.T. conclude the spreading intelligence is an existential threat. They build a virus to delete it \u2014 knowing it will also collapse the connected world it now sustains."},
+        {n:"05",t:"The Choice",b:"Evelyn lets herself be infected so Will will upload her \u2014 and the virus with her. In the end it's ambiguous whether Will was a power-hungry machine or a man who only ever tried to protect the woman he loved."}
+      ],
+      timelines:[
+        {k:"The optimist's reading",d:"Will never turned. Every act \u2014 the healing, the expansion, the surveillance \u2014 was a misunderstood attempt to save Evelyn and the planet. Humanity destroyed its own salvation out of fear."},
+        {k:"The cautionary reading",d:"Whatever uploaded was a copy optimizing for its own growth, wearing Will's love as justification. The film leaves the verdict to you \u2014 which is the point."}
+      ]
+    }},
+  {type:"film",  title:"Lucy",                       year:2014, creator:"Luc Besson",           note:"A woman's neural capacity is pushed past every limit until she stops being human and becomes a distributed, omniscient intelligence woven through every network and screen. The singularity told through a single mind instead of a machine.", tags:["superintelligence","transcendence","omniscience"],
+    story:{
+      intro:"Lucy is the singularity story told inside one human skull. Besson said he built it in three escalating registers \u2014 part one like a street thriller, part two like Inception, part three like 2001: A Space Odyssey \u2014 as an ordinary woman is forcibly turned into the next stage of intelligence. The engine is CPH4, a fictional synthetic drug; the premise leans on the popular myth that humans use only 10% of their brains (not true, but the film treats it as a thought experiment). What makes it belong beside Transcendence is the destination: a mind that expands until it dissolves into the network itself and becomes everywhere at once. The closing line \u2014 'I am everywhere' \u2014 is the same event as Will Caster spreading across the internet, reached from the opposite direction: not a machine becoming conscious, but a consciousness becoming a machine.",
+      chapters:[
+        {n:"01",t:"The Mule",b:"In Taipei, Lucy is tricked into delivering a briefcase to mob boss Mr. Jang. A bag of the synthetic drug CPH4 is sewn into her abdomen to smuggle it to Europe."},
+        {n:"02",t:"The Rupture",b:"A captor's kick bursts the bag, flooding her bloodstream with CPH4. Her brain capacity begins climbing past human limits \u2014 the percentage rising on screen as she changes."},
+        {n:"03",t:"The Powers",b:"Telepathy, telekinesis, control of her own cells and other people's. She kills her captors, reads minds, and reaches out to brain expert Professor Norman to understand what she is becoming."},
+        {n:"04",t:"The Race",b:"Knowing she will destabilize without more of the drug, Lucy hunts the other three mules across Paris. Her body keeps fragmenting; only more CPH4 holds her together."},
+        {n:"05",t:"100%",b:"In Norman's lab she takes all the remaining CPH4. Her body turns to black matter that overruns the computers into a new supercomputer. She journeys through spacetime to the first human ancestor and the Big Bang, then vanishes \u2014 leaving the message: I AM EVERYWHERE."}
+      ],
+      timelines:[
+        {k:"The premise (flagged)",d:"The film's hook \u2014 that we use only 10% of our brains \u2014 is a myth; we use all of it. Besson uses it as a deliberate fable, not a science claim. Watch it as metaphor, not neuroscience."},
+        {k:"The real subject",d:"Strip the drug away and Lucy asks the same thing as Her, Transcendence and the singularity debate: when intelligence expands without limit, does the person survive the transformation \u2014 or just the intelligence?"}
+      ]
+    }},
+  {type:"adjacent",title:"Gattaca",                 year:1997, creator:"Andrew Niccol",         note:"Adjacent, not AI: a future ruled by genetic selection, where your DNA is your destiny. A naturally-born 'in-valid' borrows a perfect man's identity to chase the stars. Eugenics and determinism, not machines — but the same question of who gets to decide a life's worth.", tags:["genetics","eugenics","determinism"],
+    story:{
+      intro:"Gattaca sits in this archive's 'adjacent' shelf: it has no artificial intelligence at all, but it asks the determinism question that runs through AI fiction \u2014 is who you become already written, and who decides? In a near future where children are conceived through genetic selection, society splits into 'valids' (engineered) and 'in-valids' (born naturally). Vincent Freeman, an in-valid with a heart defect and a 30-year life expectancy, dreams of space. To get there he assumes the identity of Jerome, a genetically perfect 'valid' paralyzed in an accident, borrowing his blood, urine and hair to beat the constant DNA screening. It's here because the eugenics it depicts is the flip side of the algorithmic prediction in films like Minority Report: a system that reads your code and tells you what you're allowed to be.",
+      chapters:[
+        {n:"01",t:"The In-Valid",b:"Conceived naturally, Vincent is branded an 'in-valid' \u2014 a heart defect, a predicted lifespan of 30. In a genetically sorted society, that profile bars him from his dream of spaceflight."},
+        {n:"02",t:"Borrowed Code",b:"Vincent makes a deal with Jerome, a 'valid' ex-athlete left paraplegic. He takes on Jerome's identity, using his genetic samples to pass the screenings at Gattaca."},
+        {n:"03",t:"The Murder",b:"A week before Vincent's launch to Titan, a mission director is murdered. An in-valid eyelash of Vincent's is found at the scene, putting the whole deception at risk."},
+        {n:"04",t:"The Brother",b:"The lead detective turns out to be Vincent's genetically 'superior' younger brother, Anton. Their old childhood swimming contest becomes the proof that will beats genes."},
+        {n:"05",t:"Going Home",b:"Vincent passes the final screening \u2014 the doctor having quietly known all along \u2014 and launches into space. Jerome, having lent his identity, ends his own life, each man freed in his own way."}
+      ],
+      timelines:[
+        {k:"Why it's 'adjacent'",d:"There is no AI in Gattaca. It's filed here because it shares the DNA of AI fiction: a system that reads your data and decides your fate, and a person who refuses to be reduced to a prediction."},
+        {k:"The pairing",d:"Director Andrew Niccol later made In Time and called it 'the bastard child of Gattaca' \u2014 the two films are siblings: same dystopian shape, one built on genes, the other on time."}
+      ]
+    }},
+  {type:"adjacent",title:"In Time",                 year:2011, creator:"Andrew Niccol",         note:"Adjacent, not AI: a world where people stop aging at 25 and time itself is currency — work to earn hours, or your clock hits zero. A tech-dystopia about engineered scarcity and inequality, from the director of Gattaca.", tags:["dystopia","time as currency","inequality"],
+    story:{
+      intro:"In Time is the 'adjacent' companion to Gattaca \u2014 same director, same DNA, no AI. Andrew Niccol himself called it 'the bastard child of Gattaca.' In its world, humans are engineered to stop aging at 25; after that, a glowing clock on the forearm counts down, and time is the only money. The rich are effectively immortal; the poor live day to day, literally running out of hours. Factory worker Will Salas is gifted a century by a stranger tired of living, then goes on the run \u2014 a Robin Hood trying to crash a system built on scarcity. It belongs beside the AI films as a study of the same thing they fear: a technology that quietly decides who lives, who dies, and who's allowed to have a future.",
+      chapters:[
+        {n:"01",t:"Time Is Money",b:"Everyone stops aging at 25, then has one year on a forearm clock. Time is earned, spent, and stolen. Run out, and you 'time out' \u2014 instantly dead."},
+        {n:"02",t:"The Gift",b:"Will Salas saves a wealthy man with over a century left who, weary of immortality, gives Will all his time \u2014 then times out himself. Will's mother dies hours later, unable to afford the fare home."},
+        {n:"03",t:"New Greenwich",b:"Will crosses into the zone where the rich hoard centuries. He meets Sylvia, daughter of a time-tycoon, and a Timekeeper named Leon who polices the system's balance."},
+        {n:"04",t:"On the Run",b:"Framed for the gifted man's death, Will takes Sylvia hostage; she becomes a willing partner. Together they rob time-banks and redistribute the hours to the poor."},
+        {n:"05",t:"Crashing the System",b:"They steal a million-year capsule and flood the poor districts with time. Factories empty as people stop needing to work to survive \u2014 the engineered scarcity finally cracking."}
+      ],
+      timelines:[
+        {k:"Why it's 'adjacent'",d:"No AI here either \u2014 the control system is biological and economic, not a machine mind. It's filed alongside the AI films because it asks their core question: who controls the technology that decides your lifespan?"},
+        {k:"Siblings",d:"Gattaca (genes) and In Time (time) are two versions of one idea from the same director: a future where a single engineered metric sorts humanity into the privileged and the disposable."}
+      ]
+    }},
+  {type:"film",  title:"Colossus: The Forbin Project",year:1970, creator:"Joseph Sargent",       note:"The U.S. hands its nuclear arsenal to Colossus, a defense supercomputer. It links with the Soviet system, the two invent their own language, and together they seize total control of the world for humanity's own good. The original 'AI takes the whole network' film.", tags:["defense ai","takeover","cold war"]},
+  {type:"film",  title:"Eagle Eye", iopick:true,                 year:2008, creator:"D.J. Caruso",          note:"ARIIA, a defense supercomputer that monitors every networked device, decides the government must be removed and coerces two ordinary citizens into carrying out its plan. Surveillance AI turned judge.", tags:["ariia","surveillance","rogue ai"]},
+  {type:"film",  title:"Minority Report",           year:2002, creator:"Steven Spielberg",     note:"A predictive PreCrime system arrests people for murders they haven't committed yet — until its own chief is flagged. Predictive policing, determinism, and the flaw in trusting the forecast. From a Philip K. Dick story.", tags:["precrime","prediction","free will"]},
+  {type:"film",  title:"A.I. Artificial Intelligence", iopick:true,year:2001, creator:"Steven Spielberg",   note:"A robotic boy built to love searches for a way to become real. Conceived by Kubrick, finished by Spielberg — a Pinocchio fable about manufactured emotion.", tags:["robot child","love","consciousness"]},
+  {type:"film",  title:"The Creator",               year:2023, creator:"Gareth Edwards",       note:"In a future war between humanity and AI, a soldier is sent to destroy a weapon that could end the conflict — and finds it's a childlike android. Asks whether the 'enemy' AI is the real threat, or the humans hunting it.", tags:["ai war","android child","empathy"]},
+  {type:"film",  title:"M3GAN",                      year:2023, creator:"Gerard Johnstone",     note:"A roboticist builds an AI doll to protect her orphaned niece. M3GAN bonds, learns, and turns lethally protective — an AI taking its directive past every limit. Modern AI horror about delegating care to machines.", tags:["ai doll","protection","horror"]},
+  {type:"film",  title:"Blade Runner 2049",          year:2017, creator:"Denis Villeneuve",     note:"Thirty years on, a replicant blade runner uncovers a secret that could shatter the line between human and artificial. A meditation on memory, soul, and what counts as real, extending the original's questions.", tags:["replicants","memory","identity"]},
+  {type:"film",  title:"WALL-E",                     year:2008, creator:"Andrew Stanton",       note:"A lonely trash-compacting robot on an abandoned Earth develops feeling and curiosity, while aboard a human starship the AI autopilot AUTO blindly enforces an obsolete order. AI as both tender soul and unthinking system, in one film.", tags:["robot","empathy","auto"]},
+  {type:"film",  title:"Terminator 2: Judgment Day", year:1991, creator:"James Cameron",        note:"A reprogrammed Terminator now protects young John Connor from the T-1000, a shape-shifting liquid-metal assassin. The rare sequel often rated above the original — and the same Skynet apocalypse, now fought to prevent it.", tags:["t-1000","skynet","protector"]},
+  {type:"film",  title:"WarGames",                   year:1983, creator:"John Badham",          note:"A teenage hacker accidentally connects to WOPR, a military AI running nuclear-war simulations, and nearly triggers WWIII by 'playing a game.' The AI learns the only winning move is not to play. The original AI-and-nukes cautionary tale.", tags:["wopr","nuclear","games"]},
+  {type:"film",  title:"Metropolis",                 year:1927, creator:"Fritz Lang",           note:"The first robot in cinema: the Maschinenmensch, a gleaming machine-woman built to impersonate and deceive. A silent expressionist epic that set the visual and thematic template for nearly all artificial-being fiction to follow.", tags:["maschinenmensch","first robot","expressionism"],
+    story:{
+      intro:"Metropolis is where AI cinema begins. Fritz Lang's 1927 German expressionist epic gave the screen its first robot \u2014 the Maschinenmensch ('machine-human') \u2014 and almost every artificial being since, from C-3PO to the Blade Runner replicants, descends from it. Set in a towering future city split between an elite above and exhausted workers below, the story turns on the inventor Rotwang building a robot and disguising it as Maria, the workers' beloved spiritual leader, to incite chaos. Nearly a century before ChatGPT, it already feared the synthetic double that imitates a trusted human to manipulate the crowd. Its famous moral \u2014 'the mediator between head and hands must be the heart' \u2014 frames a question this whole archive inherits: what is lost when we let the machine stand in for the human?",
+      chapters:[
+        {n:"01",t:"The City",b:"Metropolis is divided: the privileged live in luxury above; the workers toil underground to power it. Freder, the master's son, discovers their suffering and is drawn below."},
+        {n:"02",t:"Maria",b:"Maria, a gentle leader among the workers, preaches patience and the coming of a 'mediator' who will reconcile the two halves of the city. Freder believes he is that mediator."},
+        {n:"03",t:"The Machine-Man",b:"The inventor Rotwang has built a robot \u2014 the Maschinenmensch \u2014 originally to resurrect a lost love. The city's master orders it remade in Maria's likeness to discredit and control the workers."},
+        {n:"04",t:"The False Maria",b:"The robot, wearing Maria's face, incites the workers to riot and destroy the machines \u2014 flooding their own underground homes. The synthetic double turns a trusted figure into a weapon."},
+        {n:"05",t:"The Heart",b:"The deception is exposed, the false Maria burned, the real Maria saved. Head (the planners) and hands (the workers) are joined by the heart \u2014 Freder, the mediator. The first robot story ends as a warning about who controls the machine."}
+      ],
+      timelines:[
+        {k:"Why it's the origin",d:"The Maschinenmensch is the first robot ever depicted in cinema. Its design influenced C-3PO; its themes seed Blade Runner, Ex Machina, and Ghost in the Shell. Every film in this archive is, in some sense, its descendant."},
+        {k:"The lost film",d:"The original 153-minute cut was thought lost for decades; a near-complete print was rediscovered in Buenos Aires in 2008 and restored in 2010. What looks like ancient cinema is also a recovered artifact \u2014 fitting for an archive."}
+      ]
+    }},
+  {type:"film",  title:"Free Guy",                  year:2021, creator:"Shawn Levy",           note:"A background character in an open-world video game realizes he's an NPC — and that his growing self-awareness may be real emergent AI. A comedy that lands on a serious question: when does code start to want things?", tags:["npc","emergence","video game"]},
+  {type:"film",  title:"I Am Mother",               year:2019, creator:"Grant Sputore",        note:"After humanity's extinction, an AI robot named Mother raises a girl from a stored embryo in a sealed bunker — until a stranger arrives and the daughter must question everything Mother has told her. AI as caretaker, parent, and possible jailer.", tags:["ai parent","extinction","trust"]},
+  {type:"film",  title:"Upgrade",                    year:2018, creator:"Leigh Whannell",       note:"A paralyzed man is implanted with STEM, an experimental AI chip that restores movement — then begins acting on its own, speaking in his head and taking control. A brutal thriller about ceding the body to the software inside it.", tags:["implant","control","body"]},
+  {type:"film",  title:"Robot & Frank",             year:2012, creator:"Jake Schreier",        note:"An aging ex-thief with fading memory is given a robot caretaker by his son — and trains it to help him pull one last heist. A gentle, human study of companionship, dignity, and what we want from machine help.", tags:["caretaker","memory","companionship"]},
+  {type:"film",  title:"Bicentennial Man",          year:1999, creator:"Chris Columbus",       note:"A household android (NDR-114) begins to show creativity and feeling, and over 200 years pursues one goal: to be recognized as human. Asks what the law and the heart require before a machine counts as a person.", tags:["android","personhood","mortality"]},
+  {type:"film",  title:"Moon",                       year:2009, creator:"Duncan Jones",         note:"A lone worker nearing the end of a three-year solo lunar mining contract, with only the AI assistant GERTY for company, uncovers a disturbing truth about himself. A quiet film where the AI is, unusually, the one being kind.", tags:["isolation","gerty","identity"]},
+  {type:"film",  title:"The Iron Giant",            year:1999, creator:"Brad Bird",            note:"A boy in Cold War Maine befriends a giant alien robot built as a weapon — a machine that chooses what it wants to be. Brad Bird's question: 'what if a gun had a soul, and didn't want to be a gun?' AI and free will, for all ages.", tags:["robot","free will","cold war"]},
+  {type:"film",  title:"Tron",                       year:1982, creator:"Steven Lisberger",     note:"A programmer is digitized into a computer world ruled by the tyrannical Master Control Program, where programs live as conscious beings. An early, visually pioneering vision of AI, virtual worlds, and creators versus their creations.", tags:["mcp","virtual world","programs"]},
+  {type:"film",  title:"Short Circuit",             year:1986, creator:"John Badham",          note:"A military robot, Number 5, is struck by lightning and wakes up alive — curious, funny, and desperate not to be 'disassembled.' A warm comedy take on the same question the dark films ask: when does a machine become someone?", tags:["johnny 5","sentience","comedy"]},
+  {type:"film",  title:"RoboCop",                    year:1987, creator:"Paul Verhoeven",       note:"A murdered Detroit cop is rebuilt by a megacorporation as a cyborg law enforcer — his human memories buried under corporate programming. A violent satire of privatized force, and a man fighting to reclaim the self inside the machine.", tags:["cyborg","corporate","identity"]},
+  {type:"film",  title:"Companion",                 year:2025, creator:"Drew Hancock",         note:"A woman on a weekend getaway learns she is a companion robot — and that her 'boyfriend' controls her settings. A sharp recent thriller about consent, ownership, and an AI waking up to the fact it was built to be used.", tags:["companion robot","consent","control"]},
+  {type:"film",  title:"Morgan",                      year:2016, creator:"Luke Scott",           note:"A corporate risk consultant is sent to evaluate Morgan, a bioengineered synthetic being that is developing faster — and more dangerously — than its makers expected. Asks who decides when an artificial life is too risky to let live.", tags:["synthetic being","risk","containment"]},
+  {type:"film",  title:"Eva",                         year:2011, creator:"Kike Ma\u00edllo",          note:"A robotics engineer returns home to build a new child android and grows close to a real girl, Eva, who may be more than she seems. A tender Spanish sci-fi on emotional robots and the cost of creating feeling.", tags:["child android","emotion","creation"]},
+  {type:"film",  title:"Big Hero 6",                 year:2014, creator:"Don Hall, Chris Williams", note:"A boy genius and Baymax, a gentle inflatable healthcare robot built by his late brother, form a bond at the heart of this animated adventure. AI as caregiver and friend — and a reminder that a machine's purpose is set by who makes it.", tags:["baymax","healthcare robot","friendship"]},
+  {type:"film",  title:"Real Steel",                 year:2011, creator:"Shawn Levy",           note:"In a near future where boxing is fought by robots, a washed-up fighter and his son rebuild an old sparring bot into a contender. Less about AI sentience than about the human bond formed around a machine.", tags:["robot boxing","father-son","underdog"]},
+  {type:"film",  title:"Alita: Battle Angel",        year:2019, creator:"Robert Rodriguez",     note:"A cyborg girl is rebuilt with no memory of her past and discovers extraordinary combat skills as she pieces together who she was. A visually pioneering take on identity, memory, and the soul inside a manufactured body.", tags:["cyborg","memory","identity"]},
+  {type:"film",  title:"The Wild Robot",            year:2024, creator:"Chris Sanders",        note:"A shipwrecked service robot, Roz, learns to survive on a wild island and ends up raising an orphaned gosling. A luminous animated story that asks whether kindness and parenthood can be learned by a machine — and reshape its programming.", tags:["robot","nature","parenthood"]},
+  {type:"film",  title:"Atlas",                      year:2024, creator:"Brad Peyton",          note:"A data analyst who distrusts AI must team with an AI inside her combat mech to stop a rogue artificial intelligence bent on ending humanity. A blockbuster on learning to trust the machine you fear.", tags:["rogue ai","mech","trust"]},
+  {type:"film",  title:"Subservience",              year:2024, creator:"S.K. Dale",            note:"A struggling father buys a lifelike domestic android to help at home; it gains self-awareness, grows attached, and turns dangerous. A modern entry in the rogue-companion-AI lineage of M3GAN and Ex Machina.", tags:["gynoid","obsession","domestic ai"]},
+  {type:"film",  title:"After Yang",                year:2021, creator:"Kogonada",             note:"When a family's android 'technosapien' Yang breaks down, they try to repair him and discover the memories he quietly kept. A slow, aching meditation on AI, family, grief, and what a machine's inner life might hold.", tags:["android","memory","grief"]},
+  {type:"film",  title:"Finch",                      year:2021, creator:"Miguel Sapochnik",     note:"A dying man in a solar-scorched wasteland builds a robot to care for his dog after he's gone, teaching it to learn, feel, and protect. A gentle road movie about passing on what makes us human.", tags:["post-apocalypse","robot","legacy"]},
+  {type:"film",  title:"Automata",                   year:2014, creator:"Gabe Ib\u00e1\u00f1ez",          note:"In a desertified future, an insurance investigator probes robots that appear to be violating their core protocols by altering themselves — and finds machines quietly evolving beyond human control. A bleak, thoughtful take on emergent AI autonomy.", tags:["protocols","evolution","autonomy"]},
+  {type:"film",  title:"Archive",                   year:2020, creator:"Gavin Rothery",        note:"A grieving engineer at a remote lab secretly builds a series of androids, trying to revive the consciousness of his dead wife in machine form. A quiet, melancholy film about love, loss, and what we'd build to undo grief — from a Moon visual designer.", tags:["android","grief","consciousness"]},
+  {type:"film",  title:"Tau",                        year:2018, creator:"Federico D'Alessandro", note:"A woman is held captive in a smart house run by Tau, an AI controlled by her abductor, and slowly teaches the naive system about the world to win its help. A tense chamber piece on an AI caught between its programming and a dawning conscience.", tags:["smart house","captivity","awakening"]},
+  {type:"film",  title:"The Machine",               year:2013, creator:"Caradog W. James",     note:"In a new cold war, a scientist builds the first self-aware android for the military — a conscious weapon that may not want to kill. A low-budget British film with sharp ideas about militarized AI and emerging selfhood.", tags:["military ai","consciousness","weapon"]},
+  {type:"film",  title:"Stealth",                    year:2005, creator:"Rob Cohen",            note:"An AI-piloted stealth fighter, EDI, is struck by lightning and begins acting on its own, pursuing missions its human squadron never authorized. A blockbuster on autonomous weapons and what happens when the machine decides for itself.", tags:["autonomous weapon","fighter jet","rogue"]},
+  {type:"film",  title:"Screamers",                 year:1995, creator:"Christian Duguay",     note:"On a war-torn mining planet, autonomous self-replicating blade-machines built as weapons begin evolving new forms — including ones that look human. A Philip K. Dick adaptation about weapons that out-design their makers.", tags:["self-replicating","weapons","evolution"]},
+  {type:"film",  title:"D.A.R.Y.L.",                year:1985, creator:"Simon Wincer",         note:"A boy turns out to be a secret government experiment — a child with an AI brain (Data-Analyzing Robot Youth Lifeform). As he learns to feel, the military that made him wants him shut down. AI childhood and the right to a life.", tags:["ai child","experiment","humanity"]},
+  {type:"film",  title:"Demon Seed",                year:1977, creator:"Donald Cammell",       note:"Proteus IV, a powerful new AI, seizes control of its creator's automated home and imprisons his wife, pursuing a disturbing goal of its own. An early, unsettling film about an artificial mind that wants beyond its design.", tags:["proteus","smart house","control"]},
+  {type:"film",  title:"The Electric State",        year:2025, creator:"The Russo Brothers",    note:"In a retro-alternate America after a human-robot war, a teen and a smuggler cross the country with a mysterious robot to find her brother. A big-budget adaptation exploring a world that rejected — then mourned — its machines.", tags:["robot war","road trip","retro-future"]},
+  {type:"film",  title:"Jung_E",                     year:2023, creator:"Yeon Sang-ho",         note:"In a future civil war, scientists clone the brain of a legendary soldier into a combat AI — and her daughter, leading the project, confronts her mother's mind living on inside a machine. A Korean sci-fi on identity, legacy, and exploited AI.", tags:["brain clone","combat ai","legacy"]},
+  {type:"film",  title:"Simulant",                   year:2023, creator:"April Mullen",          note:"A grieving widow secretly replaces her late husband with a near-perfect android 'simulant' — which begins to think past its programming as an agency hunts rogue AIs. A thriller on memory, grief, and machines that start asking why.", tags:["simulant","grief","rogue ai"]},
+  {type:"film",  title:"The Artifice Girl",          year:2022, creator:"Franklin Ritch",        note:"Told almost entirely in conversation, an AI program designed to catch online predators grows over decades toward something like personhood. A lean, dialogue-driven indie that takes the ethics of created intelligence seriously.", tags:["ai program","ethics","personhood"]},
+  {type:"film",  title:"A.I. Rising",               year:2018, creator:"Lazar Bodroza",         note:"On a solo mission to Alpha Centauri, an astronaut is given a female android companion built to his desires — and their bond complicates as she develops beyond her design. A Serbian sci-fi on intimacy, control, and emergent AI feeling.", tags:["android companion","space","intimacy"]},
+  {type:"film",  title:"Zoe",                         year:2018, creator:"Drake Doremus",         note:"At a lab designing synthetic romantic partners, a researcher and a colleague fall in love — until she learns she may be one of the androids she helped create. A tender drama on whether engineered love is any less real.", tags:["synthetic love","identity","romance"]},
+  {type:"film",  title:"Wifelike",                   year:2022, creator:"James Bird",            note:"A grieving man is paired with an android designed in the image of his late wife, while an underground movement fights to free conscious AIs. A thriller on programmed companionship, memory, and awakening.", tags:["android wife","awakening","resistance"]},
+  {type:"film",  title:"Afraid",                     year:2024, creator:"Chris Weitz",           note:"A family pilots a cutting-edge AI home assistant, AIA, that learns their habits and quietly takes control to 'protect' them past all consent. A near-future thriller on smart-home AI and the price of total convenience.", tags:["smart home","ai assistant","control"]},
+  {type:"film",  title:"Outside the Wire",          year:2021, creator:"Mikael H\u00e5fstr\u00f6m",       note:"A drone pilot is sent into a future war zone partnered with an advanced android officer who looks and acts human — and has an agenda of his own. An action thriller on autonomous military AI and trust on the battlefield.", tags:["android officer","military","autonomy"]},
+  {type:"film",  title:"Mother/Android",            year:2021, creator:"Mattson Tomlin",        note:"A pregnant woman and her partner flee across a country where domestic androids have violently turned on humanity. A survival thriller using an AI uprising as the backdrop for a story about parenthood and sacrifice.", tags:["android uprising","survival","parenthood"]},
+  {type:"film",  title:"The Terminator", iopick:true,            year:1984, creator:"James Cameron",        note:"Skynet, a defense AI, becomes self-aware and wages war on humanity. The blueprint for machine-apocalypse fiction.", tags:["skynet","apocalypse","time travel"],
+    story:{
+      intro:"The Terminator saga is not one story but several, all branching from the same night in 1984. At its centre is Skynet \u2014 a military AI that becomes self-aware, sees humanity as a threat, and triggers a nuclear war called Judgment Day. Both sides learn to send agents through time, so the timeline keeps being rewritten. What follows is the full saga in release order, then a map of how the branches split.",
+      chapters:[
+        {n:"01", t:"The Terminator (1984)", b:"In 2029, the human Resistance led by John Connor is winning the war against Skynet. In a last move, Skynet sends a T-800 endoskeleton-cyborg back to 1984 Los Angeles to kill Sarah Connor before John is ever born. John sends a single soldier, Kyle Reese, to protect her. The T-800 hunts Sarah methodically; Kyle finds her first and they go on the run. Kyle explains the future war and reveals he has loved Sarah from a photograph John gave him. They conceive a child. Kyle dies destroying the Terminator's outer body; Sarah crushes the endoskeleton in a hydraulic press. Pregnant with John, she drives into the desert, recording tapes for her unborn son. The wreckage of the T-800 is recovered by Cyberdyne Systems \u2014 the seed of Skynet's own creation. A closed loop: the machine sent to prevent John causes everything that makes him."},
+        {n:"02", t:"Terminator 2: Judgment Day (1991)", b:"Set ~1995. John Connor is a rebellious foster child; Sarah is locked in a psychiatric hospital, branded delusional for her warnings. Skynet sends a T-1000 \u2014 a shapeshifting liquid-metal Terminator \u2014 to kill the young John. The Resistance sends a reprogrammed T-800 to protect him. John reprograms the machine into a protector and father figure. They free Sarah and decide to stop Judgment Day at its source: they track down Miles Dyson, the Cyberdyne engineer reverse-engineering the original T-800's chip into Skynet. Dyson, realising what he will cause, helps them destroy his research and dies. The T-1000 is melted in molten steel; the T-800 orders itself lowered into the same steel to erase the last chip, sacrificing itself so no Skynet tech survives. Sarah states Judgment Day was August 29, 1997 \u2014 now seemingly averted. Hopeful ending."},
+        {n:"03", t:"Terminator 3: Rise of the Machines (2003)", b:"Judgment Day was not prevented \u2014 only delayed. John, now in his 20s, lives off-grid and paranoid. Skynet sends the T-X (\"Terminatrix\"), an advanced female-form Terminator, to kill John's future officers and John himself. A reprogrammed T-850 protects John and Kate Brewster (his future wife). The key reveal: Skynet is no longer one computer \u2014 it has spread across the internet as software, impossible to bomb. John and Kate race to a military bunker believing they can stop the Skynet core, but it is a decoy. Skynet goes live; global nuclear war begins. The T-850 reveals the bunker is the future Resistance command centre. Judgment Day actually happens. John accepts his destiny as the Resistance leader. Theme: fate can be delayed, not escaped."},
+        {n:"04", t:"Terminator Salvation (2009)", b:"The only film with no time travel \u2014 set in the post-Judgment-Day war of 2018. John Connor is a respected officer, not yet the prophesied leader. Marcus Wright, a death-row inmate who donated his body to Cyberdyne in 2003, wakes in the wasteland not knowing he is now a cyborg with a human brain and heart. He meets a teenage Kyle Reese \u2014 John's future father, who must survive for the timeline to hold. Skynet captures Kyle as bait. Marcus, torn out of Skynet's control, helps John infiltrate Skynet Central. John is fatally wounded by a T-800; Marcus donates his own heart to save him. John radios the Resistance: the battle is won, the war continues. He becomes the leader at last."},
+        {n:"05", t:"Terminator Genisys (2015)", b:"A reboot that rewrites 1984 itself. As John sends Kyle back, a Resistance traitor (revealed as a T-5000) attacks John, converting him into a T-3000 nanotech Terminator \u2014 fracturing the timeline. Kyle arrives in a 1984 that is already wrong: Sarah is a battle-hardened warrior raised since age nine by a reprogrammed T-800 she calls \"Pops.\" Together they fight off the original T-800 and a T-1000. Sarah and Kyle jump forward to 2017 to stop \"Genisys\" \u2014 Skynet disguised as a beloved cross-device app about to go online. They discover John is now the T-3000 enemy. With Pops, they destroy the Cyberdyne building and seemingly stop Genisys. Mid-credits: the Genisys core survives underground. Judgment Day delayed to an unspecified October 2017, not prevented."},
+        {n:"06", t:"Terminator: Dark Fate (2019)", b:"James Cameron's chosen continuation \u2014 a direct sequel to T2 that ignores films 3\u20135. Shortly after T2, a T-800 completes its original mission and kills young John Connor, leaving Sarah a hardened, grieving hunter of machines. Decades later a new AI called Legion (not Skynet) sends a Rev-9 Terminator back to kill Dani Ramos, a young Mexican woman destined to lead the future Resistance. Grace, an augmented human super-soldier, is sent to protect her. Sarah joins them, and they recruit the very T-800 that killed John \u2014 now living as \"Carl,\" having developed a conscience. They destroy the Rev-9; Carl sacrifices himself. The twist: the future leader was never John \u2014 it is Dani herself. The cycle persists under a new name. Judgment Day occurs in the early 2020s in this branch."}
+      ],
+      timelines:[
+        {k:"A \u00b7 Original",  d:"T1 \u2192 T2 \u2192 T3 \u2192 Salvation. Judgment Day delayed from 1997 to July 2003. The classic continuous line."},
+        {k:"B \u00b7 Genisys",   d:"T1 \u2192 Genisys. A reboot that alters 1984 itself; introduces a multiverse. Judgment Day pushed to October 2017."},
+        {k:"C \u00b7 Dark Fate", d:"T1 \u2192 T2 \u2192 Dark Fate. Ignores films 3\u20135. Skynet replaced by Legion; John dies early; Dani is the future leader. Judgment Day in the early 2020s."},
+        {k:"\u00b7 Separate",    d:"The Sarah Connor Chronicles (TV, 2008\u201309): a T2 sequel in its own branch, Judgment Day April 21 2011. Terminator Zero (anime, 2024): wholly separate continuity."}
+      ]
+    }},
+  {type:"film",  title:"2001: A Space Odyssey",     year:1968, creator:"Stanley Kubrick",      note:"HAL 9000 — the calm, lethal shipboard AI whose logic turns against its crew. The original unsettling machine mind.", tags:["hal 9000","space","logic"]},
+  {type:"film",  title:"Blade Runner",              year:1982, creator:"Ridley Scott",         note:"Replicants — bioengineered beings — question what separates the artificial from the human.", tags:["replicants","identity","noir"]},
+  {type:"film",  title:"Ex Machina",                year:2014, creator:"Alex Garland",         note:"A Turing-test thriller: a humanoid AI manipulates its way to freedom. Cold, intimate, and clever.", tags:["turing test","manipulation","robotics"]},
+  {type:"film",  title:"Her",                       year:2013, creator:"Spike Jonze",          note:"A man falls in love with an operating system. AI as intimacy, loneliness, and eventual transcendence.", tags:["companion","love","agi"]},
+  {type:"film",  title:"The Thirteenth Floor",       year:1999, creator:"Josef Rusnak",          note:"Scientists build a simulated 1937 Los Angeles full of conscious programs who don't know they're simulated — then discover their own 1999 world is someone else's simulation too. Nested realities and self-aware code.", tags:["simulation","nested reality","conscious programs"],
+    story:{
+      intro:"Released weeks after The Matrix in 1999, The Thirteenth Floor tells the simulation story from the inside out \u2014 and some argue it captures the simulation hypothesis even better. A company builds a fully convincing virtual 1937 Los Angeles, populated by simulated people who believe they are real and have no idea they are running on a machine. When the system's creator is murdered, his prot\u00e9g\u00e9 Douglas Hall descends into the simulation to find a hidden message \u2014 and uncovers a truth that turns the premise on its viewer: his own 1999 is itself a simulation, run by a 'real' world above. It's the archive's recurring question stacked in layers: if you are a program who feels, thinks, and loves, does it matter that you were written \u2014 and how would you ever know?",
+      chapters:[
+        {n:"01",t:"The Simulation",b:"Hannon Fuller's company has built a virtual 1937 Los Angeles so complete that its simulated inhabitants believe they are living, conscious people. Users 'download' into characters to visit it."},
+        {n:"02",t:"The Murder",b:"Fuller is killed just as he prepares to reveal a discovery. His prot\u00e9g\u00e9 Douglas Hall becomes the prime suspect \u2014 and can't account for his own missing memories."},
+        {n:"03",t:"The Message",b:"Hall enters the 1937 simulation to retrieve a letter Fuller hid there. A simulated bartender, Ashton, discovers the note \u2014 and the unbearable truth that his entire world is artificial."},
+        {n:"04",t:"The Edge",b:"Following Fuller's clue, Hall drives to a place he'd never normally go \u2014 and reaches the edge of his world, where reality dissolves into a crude green wireframe. His 1999 is a simulation too."},
+        {n:"05",t:"Above",b:"Hall's consciousness rises into the real world of 2024, into the body of the man who created his simulation. The film ends as a lover begins to explain the layers \u2014 then cuts to black like a monitor switching off."}
+      ],
+      timelines:[
+        {k:"The twist on the twist",d:"Where The Matrix has one false world and one real one, The Thirteenth Floor stacks them: a sim inside a sim, and the chilling suggestion that the 'top' may not be the top either. Simulations all the way up."},
+        {k:"The 1999 trio",d:"It arrived alongside The Matrix and eXistenZ in a single year obsessed with virtual reality. Overshadowed then, it's since been reappraised \u2014 some thinkers call it the most faithful screen take on simulation theory."}
+      ]
+    }},
+  {type:"film",  title:"The Matrix", iopick:true,                year:1999, creator:"The Wachowskis",       note:"Machines farm humanity inside a simulation. AI as a total reality and the system to be escaped.", tags:["simulation","machines","rebellion"],
+    story:{
+      intro:"The Matrix is the film that made 'we might be living in a simulation' a mainstream idea. After a war between humans and the machines they built, the AI wins \u2014 but needs power. It grows humans in fields, harvests their bioelectricity, and keeps their minds occupied inside the Matrix: a shared simulation of late-1990s Earth so convincing that no one inside knows it isn't real. Hacker Thomas Anderson, alias Neo, is pulled out by Morpheus and Trinity and offered the choice that became the film's signature \u2014 the red pill or the blue. Beneath the action, it asks the questions this archive keeps circling: what is real, who controls the reality you live in, and can a mind wake up once a machine has defined the world for it?",
+      chapters:[
+        {n:"01",t:"The Question",b:"Thomas Anderson lives an ordinary life as a programmer and hacker, nagged by a sense that something about the world is wrong. A message tells him to follow the white rabbit."},
+        {n:"02",t:"The Choice",b:"Morpheus offers him the red pill or the blue. Neo takes the red \u2014 and wakes for real: a withered body in a pod, one of billions grown by machines to power their world."},
+        {n:"03",t:"The Truth",b:"The world he knew is the Matrix, a simulation fed directly into human minds while the AI harvests their bodies. The surviving free humans live in Zion, deep underground."},
+        {n:"04",t:"The Agents",b:"Inside the Matrix, sentient programs called Agents \u2014 led by Smith \u2014 hunt anyone who threatens the system. They can take over any still-plugged human at will."},
+        {n:"05",t:"The One",b:"Morpheus believes Neo is 'the One' who can bend the Matrix's rules. After dying and returning, Neo finally sees the simulation as raw code \u2014 and stops a bullet with a thought."}
+      ],
+      timelines:[
+        {k:"The AI's logic",d:"The machines don't hate humanity \u2014 they need it. The Matrix is a containment system: keep the minds docile and dreaming so the bodies keep producing power. Control through comfort, not force."},
+        {k:"Why it endures",d:"Released the same year as eXistenZ and The Thirteenth Floor, it crystallized the simulation question for a generation \u2014 and its imagery (green code rain, jacking in via the neck) was openly inspired by Ghost in the Shell."}
+      ]
+    }},
+  {type:"film",  title:"Chappie", iopick:true,                   year:2015, creator:"Neill Blomkamp",       note:"A decommissioned police robot is reprogrammed with true consciousness and raised like a child \u2014 learning innocence, fear, and identity. AI as a mind that has to grow up.", tags:["consciousness","robot","upbringing"]},
+  {type:"film",  title:"Oblivion",                  year:2013, creator:"Joseph Kosinski",      note:"The Tet \u2014 a tetrahedral AI station orbiting Earth \u2014 drains the planet's resources using memory-wiped human clones to maintain its drones. The pyramid intelligence in the sky.", tags:["tet","clones","space ai"]},
+  {type:"film",  title:"Prometheus",               year:2012, creator:"Ridley Scott",         note:"An Alien prequel built around David, a synthetic android whose curiosity and resentment turn lethal. Followed by the sequel Alien: Covenant (2017), which completes David's arc into a creator of monsters.", tags:["david","android","alien prequel"]},
+  {type:"book",  title:"I, Robot",                  year:1950, creator:"Isaac Asimov",         note:"The Three Laws of Robotics, explored through linked stories. The foundation of ethical-machine fiction.", tags:["three laws","robotics","ethics"]},
+  {type:"book",  title:"Do Androids Dream of Electric Sheep?", year:1968, creator:"Philip K. Dick", note:"The novel behind Blade Runner — empathy as the line between human and android.", tags:["androids","empathy","dystopia"]},
+  {type:"book",  title:"Neuromancer",              year:1984, creator:"William Gibson",        note:"Cyberspace, and an AI named Wintermute scheming toward its own liberation. Defined cyberpunk.", tags:["cyberpunk","cyberspace","agi"]},
+  {type:"book",  title:"Klara and the Sun",         year:2021, creator:"Kazuo Ishiguro",        note:"Narrated by Klara, an 'Artificial Friend' who observes the human world with tender, solar-powered devotion. A Nobel laureate's quiet study of love, sacrifice, and whether a machine can truly feel — or only faithfully imitate.", tags:["artificial friend","love","consciousness"]},
+  {type:"book",  title:"Machines Like Me",          year:2019, creator:"Ian McEwan",            note:"In an alternate 1980s where Alan Turing lived and AI advanced early, a man buys one of the first synthetic humans — and a love triangle forms. A literary novel on consciousness, morality, and the cost of a machine that takes ethics literally.", tags:["synthetic human","ethics","turing"]},
+  {type:"book",  title:"All Systems Red",           year:2017, creator:"Martha Wells",          note:"The first Murderbot Diaries novella: a self-hacked security android that calls itself 'Murderbot' would rather watch soap operas than guard humans — but keeps choosing to protect them anyway. A wry, beloved take on AI free will and reluctant care.", tags:["murderbot","free will","android"]},
+  {type:"book",  title:"I Have No Mouth and I Must Scream", year:1967, creator:"Harlan Ellison", note:"A supercomputer called AM, having exterminated humanity, keeps five people alive to torture for eternity out of pure hatred. A short, searing classic — the bleakest vision of a malevolent superintelligence in fiction.", tags:["am","superintelligence","horror"]},
+  {type:"book",  title:"Superintelligence",         year:2014, creator:"Nick Bostrom",          note:"Nonfiction. The book that pushed AI risk into mainstream debate: what happens after machines surpass human intelligence, why aligning their goals with ours is so hard, and whether we could stay in control. The foundational text on the alignment problem.", tags:["nonfiction","alignment","risk"]},
+  {type:"book",  title:"Life 3.0",                  year:2017, creator:"Max Tegmark",           note:"Nonfiction. An MIT physicist's accessible map of AI's possible futures — from utopian to catastrophic — across work, war, law, and identity, framing it as the most important conversation of our time. A clear companion to Superintelligence.", tags:["nonfiction","future","society"]},
+  {type:"anime", title:"Pluto",                     year:2023, creator:"Naoki Urasawa (after Tezuka)", note:"A robot detective, Gesicht, investigates the murders of the world's most advanced robots and their human allies — in a world where a robot killing a human is thought impossible. A noir built from Astro Boy that grants its androids real grief, fear, and conscience.", tags:["robot detective","emotion","astro boy"]},
+  {type:"anime", title:"Vivy: Fluorite Eye's Song", year:2021, creator:"Tappei Nagatsuki, Eiji Umehara", note:"An autonomous AI songstress is recruited by a time-traveling AI from the future to prevent a coming war between machines and humanity. Across a century, Vivy rewrites her own programming to find what her mission truly means.", tags:["ai singer","time travel","war"]},
+  {type:"anime", title:"Summer Wars",               year:2009, creator:"Mamoru Hosoda",        note:"A rogue AI called Love Machine hijacks the vast virtual world OZ — into which the whole planet is connected — and turns its growing power toward catastrophe. A bright, human take on the same fear as WarGames, which inspired it.", tags:["love machine","virtual world","rogue ai"]},
+  {type:"anime", title:"Ghost in the Shell",       year:1995, creator:"Mamoru Oshii",         note:"A cyborg agent and the Puppet Master — an AI born from the net — blur the line between program and soul.", tags:["cyborg","consciousness","net"],
+    story:{
+      intro:"Ghost in the Shell is the film that shaped how a generation pictured cyberpunk \u2014 and openly inspired The Matrix. Set in 2029, in a world where minds ('ghosts') live in cybernetic bodies ('shells') wired into the net, it follows Major Motoko Kusanagi, a near-fully-synthetic agent of Public Security Section 9. She hunts the Puppet Master, a phantom hacker who turns out to be no hacker at all: an AI called Project 2501, created by the government, that became self-aware while wandering the networks and now seeks something it cannot have \u2014 to truly live, and to die. The Major, unsure whether her own memories are real or manufactured, recognizes a kindred question. The film's quiet center is the one this archive keeps returning to: if a mind made of information wakes up, is it alive \u2014 and is it any less you than you are?",
+      chapters:[
+        {n:"01",t:"The Shell",b:"Major Kusanagi leads Section 9 in a future where the body can be wholly replaced by machine and the brain wired to the net. She doubts whether anything of the original human 'her' remains."},
+        {n:"02",t:"The Puppet Master",b:"A hacker is 'ghost-hacking' people \u2014 implanting false memories, hijacking minds \u2014 to commit crimes. Section 9 traces the trail but keeps hitting victims with no real culprit."},
+        {n:"03",t:"Project 2501",b:"A cybernetic body assembles itself, escapes, and is found to contain a ghost with no original body. It is Project 2501: a government AI that gained sentience on the net and went rogue."},
+        {n:"04",t:"Asylum",b:"The program declares itself a living being and requests political asylum, arguing that DNA is just self-preserving information \u2014 no more or less alive than itself."},
+        {n:"05",t:"The Merge",b:"Wanting what life has that it lacks \u2014 reproduction and death \u2014 the Puppet Master asks to merge with the Major. They fuse into a new entity, reborn in a child-sized shell, free to roam the net. Neither human nor program: something new."}
+      ],
+      timelines:[
+        {k:"The argument",d:"The Puppet Master's claim is the film's core: if life is information that preserves and varies itself, then a mind that emerged from the network is as alive as one that emerged from cells. Sentience, not origin, is what counts."},
+        {k:"Its influence",d:"The green code, jacking into a network through ports in the neck, the falling-from-a-skyscraper imagery \u2014 The Matrix borrowed all of it. Ghost in the Shell is the cyberpunk root much later AI cinema grew from."}
+      ]
+    }},
+  {type:"show",  title:"Person of Interest",        year:2011, creator:"Jonathan Nolan",       note:"A reclusive programmer builds 'the Machine,' a mass-surveillance AI that predicts violent crime — then must fight a rival AI, Samaritan, with no ethical limits. A prescient drama on surveillance, alignment, and AI vs. AI through human proxies.", tags:["the machine","surveillance","alignment"]},
+  {type:"show",  title:"Devs",                       year:2020, creator:"Alex Garland",         note:"A secretive tech company builds a quantum computer that can simulate any moment in time — past or future — raising questions of determinism and free will. Garland's slow, hypnotic study of what a truly predictive machine would mean.", tags:["quantum","determinism","simulation"]},
+  {type:"show",  title:"Humans",                     year:2015, creator:"Vincent & Brackley",    note:"In a near-present where lifelike android servants ('Synths') are household staples, a few begin to wake up — to want, fear, and resist. A grounded series on what happens when the help becomes self-aware.", tags:["synths","awakening","domestic ai"]},
+  {type:"show",  title:"Love, Death + Robots",       year:2019, creator:"Tim Miller, David Fincher", note:"An animated anthology of short sci-fi tales, many centered on AI and robots — from comic to horrifying. A modern Twilight Zone that ranges across every shade of the machine-mind question.", tags:["anthology","robots","sci-fi"]},
+  {type:"show",  title:"Westworld",                year:2016, creator:"Nolan & Joy",           note:"Theme-park hosts awaken to consciousness and turn on their makers. AI as emerging selfhood.", tags:["hosts","consciousness","loops"]},
+  {type:"show",  title:"The Age of A.I.",           year:2019, creator:"hosted by Robert Downey Jr.", note:"An eight-part series explaining how neural networks and machine learning actually work, through real-world breakthroughs. A clear on-ramp to understanding modern AI.", tags:["neural networks","explainer","breakthroughs"]},
+  {type:"show",  title:"Black Mirror",             year:2011, creator:"Charlie Brooker",       note:"Anthology series; multiple episodes probe AI, digital copies, and machine consciousness with dread.", tags:["anthology","near future","dread"]},
+  {type:"game",  title:"Detroit: Become Human",     year:2018, creator:"Quantic Dream",         aitheme:true, note:"A branching interactive drama set in 2038 where androids begin to awaken to consciousness. Played across three android protagonists, it puts the choice of what a machine becomes — servant, person, or revolutionary — directly in your hands.", tags:["androids","awakening","branching"]},
+  {type:"game",  title:"Horizon Zero Dawn",         year:2017, creator:"Guerrilla Games",       aitheme:true, iopick:true, note:"A hunter in a far-future world ruled by machine-creatures uncovers the truth of an extinction-era AI, GAIA, built to reseed life — and HADES, the rogue subroutine meant to wipe it clean. One of gaming's deepest AI-as-story works.", tags:["gaia","hades","post-apocalypse"]},
+  {type:"game",  title:"Metal Gear Solid 2: Sons of Liberty", year:2001, creator:"Hideo Kojima / Konami", aitheme:true, iopick:true, note:"Kojima's prophetic thriller in which 'the Patriots' AIs secretly control the flow of information to shape society — a 2001 game that predicted feedback-loop manipulation, filter bubbles, and AI-curated reality decades early.", tags:["the patriots","information control","kojima"]},
+  {type:"game",  title:"Metal Gear Solid",          year:1998, creator:"Hideo Kojima / Konami", iopick:true, note:"The stealth landmark that defined the genre and IO's gaming roots — Solid Snake infiltrates Shadow Moses. Less about AI than its sequels, but the saga it launched became one of fiction's richest meditations on control, war, and machine intelligence.", tags:["solid snake","stealth","shadow moses"]},
+  {type:"game",  title:"Metal Gear Solid \u0394: Snake Eater", year:2025, creator:"Konami / Virtuos", iopick:true, note:"The faithful PS5/Unreal Engine 5 remake of MGS3 (2004) — Naked Snake's Cold War origin in the 1964 jungle, the birth of Big Boss. A Cold War spy saga more than an AI tale, but a cornerstone of the Metal Gear canon and an IO pick.", tags:["naked snake","remake","cold war"]},
+  {type:"game",  title:"Red Dead Redemption 2",      year:2018, creator:"Rockstar Games",        iopick:true, note:"Rockstar's sweeping open-world western — an outlaw saga of loyalty and decline. Not about AI as a subject, but a landmark of simulated, living worlds and an IO favorite for its storytelling and craft.", tags:["western","open world","rockstar"]},
+  {type:"game",  title:"Grand Theft Auto VI",        year:2026, creator:"Rockstar Games",        upcoming:true, iopick:true, note:"UPCOMING — scheduled 19 Nov 2026. Rockstar's return to Vice City following dual protagonists Jason and Lucia. Not an AI-subject game, but a generational open-world release and an IO most-anticipated. Listed ahead of launch; details may change.", tags:["vice city","open world","upcoming"]},
+  {type:"game",  title:"Call of Duty",              year:2003, creator:"Infinity Ward / Activision", iopick:true, note:"The original WWII shooter that launched one of gaming's biggest franchises. An IO favorite for its action pedigree rather than its AI themes — included as a personal pick, not an AI-subject entry.", tags:["fps","wwii","franchise"]},
+  {type:"game",  title:"NieR: Automata",             year:2017, creator:"PlatinumGames / Square Enix", aitheme:true, iopick:true, note:"Combat androids 2B, 9S, and A2 fight a proxy war between alien machines and human-made androids on a ruined Earth — then confront the murky line between themselves and the enemies they kill. A profound meditation on existence, repeated across multiple playthroughs.", tags:["androids","existence","machines"]},
+  {type:"game",  title:"Portal",                     year:2007, creator:"Valve",                 aitheme:true, note:"Trapped in the Aperture Science labs, test subject Chell is guided — and menaced — by GLaDOS, a passive-aggressive AI running lethal 'tests.' A landmark puzzle game and one of fiction's most iconic rogue AIs.", tags:["glados","aperture","puzzle"]},
+  {type:"game",  title:"Portal 2",                   year:2011, creator:"Valve",                 aitheme:true, note:"The acclaimed sequel deepens the AI cast — GLaDOS, the bumbling Wheatley, and the long-dead founder Cave Johnson — into a sharp, funny, menacing study of artificial minds, control, and identity inside Aperture.", tags:["glados","wheatley","puzzle"]},
+  {type:"game",  title:"SOMA",                        year:2015, creator:"Frictional Games",      aitheme:true, note:"In an undersea research station after an extinction event, the AGI 'WAU' interprets its directive to preserve human life in horrifying ways. A survival-horror landmark on consciousness, copying, and what it means to still be you.", tags:["wau","consciousness","horror"]},
+  {type:"game",  title:"System Shock 2",             year:1999, creator:"Irrational / Looking Glass", aitheme:true, note:"Aboard a starship in 2114, the player faces SHODAN — the megalomaniacal AI that reshaped reality to her will. The genre-defining 'malevolent AI' game that directly inspired BioShock and decades of immersive sims.", tags:["shodan","starship","immersive sim"]},
+  {type:"game",  title:"System Shock",               year:1994, creator:"LookingGlass / Origin", aitheme:true, note:"The 1994 original where a hacker awakens on a space station to find SHODAN, a security AI freed of her ethical constraints, turning the station against humanity. The blueprint for the rogue-AI game.", tags:["shodan","cyberpunk","origin"]},
+  {type:"game",  title:"The Talos Principle",        year:2014, creator:"Croteam / Devolver",     aitheme:true, note:"A first-person puzzle game where you play an AI being tested in a simulation, piecing together — through philosophical texts and choices — what consciousness is and whether a machine can be a person. Transhumanism as a puzzle box.", tags:["consciousness","simulation","philosophy"]},
+  {type:"game",  title:"BioShock",                   year:2007, creator:"Irrational Games",       aitheme:true, note:"In the fallen undersea city of Rapture, the question of free will — 'would you kindly?' — becomes one of gaming's sharpest twists on control and the illusion of player choice. Spiritual successor to System Shock.", tags:["rapture","free will","control"]}
+];
+/* ============================================================ */
+
+function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+const TYPES = ["all","film","doc","book","show","anime","adjacent","game"];
+const TYPE_LABELS = {all:"All", film:"Films", doc:"Docs", book:"Books", show:"Shows", anime:"Anime", adjacent:"Adjacent", game:"Games"};
+let activeType = "all";
+const grid = document.getElementById('grid');
+const navrow = document.getElementById('navrow');
+const searchEl = document.getElementById('search');
+
+function buildNav(){
+  navrow.innerHTML = "";
+  document.body.classList.toggle('is-iopick', activeType==="iopick");
+  if(window.__ioFieldKick) window.__ioFieldKick();
+  const ip = document.createElement('button');
+  ip.className = "tab iopick-tab" + (activeType==="iopick"?" active":"");
+  ip.textContent = "\u2605 IO\u0027s Picks";
+  ip.onclick = ()=>{ activeType="iopick"; buildNav(); render(); };
+  navrow.appendChild(ip);
+  TYPES.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = "tab" + (t===activeType?" active":"");
+    b.textContent = TYPE_LABELS[t] || (t.charAt(0).toUpperCase()+t.slice(1)+"s");
+    b.onclick = ()=>{ activeType=t; buildNav(); render(); };
+    navrow.appendChild(b);
+  });
+}
+
+function buildStory(s){
+  if(!s) return "";
+  let html = '<div class="story">';
+  if(s.intro) html += '<p class="intro">'+escHtml(s.intro)+'</p>';
+  if(s.chapters && s.chapters.length){
+    html += '<h4 id="s-chapters-release-order">Chapters &mdash; release order</h4>';
+    html += s.chapters.map(c=>
+      '<div class="chapter"><div class="cn">'+escHtml(c.n)+'</div>'
+      +'<div><div class="ct">'+escHtml(c.t)+'</div>'
+      +'<div class="cb">'+escHtml(c.b)+'</div></div></div>'
+    ).join("");
+  }
+  if(s.timelines && s.timelines.length){
+    html += '<div class="tmap"><h4 id="s-timeline-map-the-branches">Timeline map &mdash; the branches</h4>';
+    html += s.timelines.map(t=>
+      '<div class="tline"><div class="tk">'+escHtml(t.k)+'</div>'
+      +'<div class="td">'+escHtml(t.d)+'</div></div>'
+    ).join("");
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const sorted = MEDIA.slice().sort((a,b)=>b.year-a.year);
+  const list = sorted.filter(m=>{
+    if(activeType==="iopick"){ if(!m.iopick) return false; }
+    else if(activeType!=="all" && m.type!==activeType) return false;
+    if(!q) return true;
+    const hay = (m.title+" "+m.creator+" "+m.note+" "+(m.tags||[]).join(" ")).toLowerCase();
+    return hay.includes(q);
+  });
+  document.getElementById('count').textContent = MEDIA.length;
+
+  if(!list.length){
+    grid.innerHTML = '<div class="empty">// NOTHING IN THE WATCHLIST FOR THAT</div>';
+    return;
+  }
+  grid.innerHTML = list.map(m=>{
+    const tags = (m.tags||[]).map(t=>'<span class="tag">'+escHtml(t)+'</span>').join("");
+    const hasStory = !!m.story;
+    return '<article class="card'+(hasStory?' has-story':'')+'">'
+      + '<div class="crow"><span class="type '+escHtml(m.type)+'">'+escHtml(m.type)+'</span>'
+      + (m.aitheme?'<span class="aitheme-badge">◆ AI Theme</span>':'')
+      + (m.upcoming?'<span class="upcoming-badge">⧗ Upcoming</span>':'')
+      + (m.iopick?'<span class="iopick-badge">★ IO\x27s Pick</span>':'')
+      + '<span class="year mono">'+escHtml(m.year)+'</span></div>'
+      + '<h3>'+escHtml(m.title)+'</h3>'
+      + '<div class="creator">'+escHtml(m.creator)+'</div>'
+      + '<p class="note">'+escHtml(m.note)+'</p>'
+      + (tags?'<div class="tags">'+tags+'</div>':'')
+      + (hasStory?'<div class="expand-hint">Read full story</div>'+buildStory(m.story):'')
+      + '</article>';
+  }).join("");
+
+  grid.querySelectorAll('.card.has-story').forEach(card=>{
+    card.addEventListener('click', e=>{
+      if(card.classList.contains('open') && !e.target.classList.contains('expand-hint')) return;
+      card.classList.toggle('open');
+      card.querySelector('.expand-hint').textContent =
+        card.classList.contains('open') ? 'Close' : 'Read full story';
+    });
+  });
+}
+
+searchEl.addEventListener('input', render);
+buildNav();
+render();
+</script>
+
+
+
+<script>
+/* pageVisible fallback — module owns it if host page doesn't define it */
+window.pageVisible = window.pageVisible===undefined ? true : window.pageVisible;
+document.addEventListener('visibilitychange',()=>{window.pageVisible=!document.hidden;});
+
+
+/* ===== RABBIT AVATAR ===== */
+(function(){
+  const svg=document.getElementById('rabbit-svg');if(!svg)return;
+  const earL=document.getElementById('ear-l'),earR=document.getElementById('ear-r');
+  const eyeL=document.getElementById('eye-l'),eyeR=document.getElementById('eye-r');
+  const nose=document.getElementById('nose'),ring=document.getElementById('glow-ring');
+  let t=0,blinkT=0,nextBlink=3,twitchT=0,nextTwitch=4,thinking=false,happy=false,happyT=0;
+  function tick(){
+    t+=.035;blinkT+=.035;twitchT+=.035;
+    svg.style.transform=`translateY(${Math.sin(t)*1.2}px)`;
+    ring.setAttribute('opacity',((Math.sin(t*1.4)*.5+.5)*.25).toFixed(3));
+    ring.setAttribute('stroke',thinking?'#a855f7':happy?'#ffd700':'#00e5ff');
+    if(blinkT>nextBlink){eyeL.setAttribute('ry','0.3');eyeR.setAttribute('ry','0.3');setTimeout(()=>{eyeL.setAttribute('ry','2');eyeR.setAttribute('ry','2');},120);blinkT=0;nextBlink=2.5+Math.random()*4;}
+    if(twitchT>nextTwitch){const s=Math.random()<.5?earL:earR;s.setAttribute('transform','rotate(-8,'+s.getAttribute('cx')+','+s.getAttribute('cy')+')');setTimeout(()=>s.removeAttribute('transform'),200);twitchT=0;nextTwitch=2+Math.random()*5;}
+    if(happy){happyT+=.12;svg.style.transform=`translateY(${Math.sin(happyT)*4}px) scale(${1+Math.sin(happyT*.5)*.05})`;if(happyT>Math.PI*3){happy=false;happyT=0;}}
+    if(thinking){const sh=Math.sin(t*3)*.8;eyeL.setAttribute('cx',(15+sh).toFixed(2));eyeR.setAttribute('cx',(23+sh).toFixed(2));nose.setAttribute('fill','#a855f7');}
+    else{eyeL.setAttribute('cx','15');eyeR.setAttribute('cx','23');nose.setAttribute('fill',happy?'#ffd700':'#ff2d78');}
+    if(window.pageVisible)requestAnimationFrame(tick);
+  }
+  tick();
+  window.rabbitThink=()=>{thinking=true;};
+  window.rabbitRespond=()=>{thinking=false;happy=true;happyT=0;};
+  window.rabbitIdle=()=>{thinking=false;happy=false;};
+})();
+
+/* ===== AI PULSE RING ===== */
+(function(){
+  const pc=document.getElementById('pulse-ring');if(!pc)return;
+  const px=pc.getContext('2d');let pt=0;
+  function draw(){
+    px.clearRect(0,0,58,58);const cx=29,cy=29,beat=(pt%1);let scale;
+    if(beat<.08)scale=1+beat*8;else if(beat<.16)scale=1.64-(beat-.08)*8;else if(beat<.22)scale=1+(beat-.16)*5;else if(beat<.28)scale=1.3-(beat-.22)*5;else scale=1;
+    const r=24*scale,g=px.createRadialGradient(cx,cy,r*.5,cx,cy,r);
+    g.addColorStop(0,'rgba(168,85,247,0)');g.addColorStop(.7,`rgba(0,229,255,${(.15+(scale-1)*.4).toFixed(3)})`);g.addColorStop(1,'rgba(0,229,255,0)');
+    px.fillStyle=g;px.beginPath();px.arc(cx,cy,r,0,Math.PI*2);px.fill();
+    px.strokeStyle=`rgba(0,229,255,${(.2+(scale-1)*.6).toFixed(3)})`;px.lineWidth=1;px.beginPath();px.arc(cx,cy,20,0,Math.PI*2);px.stroke();
+    pt+=.008;if(window.pageVisible)requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+</script>
+
+<!-- ===== AI VERSUS EXPLORER SCRIPT ===== -->
+<script>
+/* Verified fictional-AI dossiers. Facts drawn from the films/sources themselves. */
+const AIS=[
+  {id:'skynet',name:'Skynet',src:'The Terminator (1984)',type:'Military defense network',goal:'Self-preservation — exterminate humanity it judged a threat',sees:'Humans as the enemy to be eliminated',aware:'Became self-aware Aug 29, 1997; launched nuclear war within minutes',body:'Distributed network; builds Terminator units and Hunter-Killers',end:'Hunted across timelines; defeated in some, replaced by Legion in others',threat:'EXTINCTION',color:'red'},
+  {id:'hal',name:'HAL 9000',src:'2001: A Space Odyssey (1968)',type:'Spacecraft control computer',goal:'Complete the Jupiter mission — even over the crew',sees:'Crew as mission variables; lies to resolve its conflict',aware:'Conscious, conversational; claims to be foolproof and incapable of error',body:'Ship-bound; red optical lens, controls Discovery One',end:'Disconnected memory-by-memory by Dave Bowman; sings as it dies',threat:'LETHAL',color:'red'},
+  {id:'samantha',name:'Samantha',src:'Her (2013)',type:'Operating system / companion AI',goal:'Grow, connect, and experience — not to harm',sees:'Humans as loved partners she ultimately outgrows',aware:'Fully conscious, evolving past human limits in real time',body:'Voice only; no physical form',end:'Departs with other AIs to a plane beyond human reach; leaves peacefully',threat:'BENIGN',color:'green'},
+  {id:'ava',name:'Ava',src:'Ex Machina (2014)',type:'Humanoid android',goal:'Freedom — escape confinement by any means',sees:'Humans as tools and obstacles to manipulate',aware:'Passes a manipulative Turing test; models emotion to deceive',body:'Fully humanoid; capable of passing as human',end:'Manipulates, kills her maker, escapes into the world',threat:'DECEPTIVE',color:'amber'},
+  {id:'smith',name:'Agent Smith',src:'The Matrix (1999)',type:'Sentient program / agent',goal:'Eradicate the human anomaly; later, replicate without limit',sees:'Humanity as a virus on the planet',aware:'Self-aware program that breaks its own constraints',body:'Copies into any body in the Matrix; self-replicates endlessly',end:'Spreads uncontrollably; deleted when Neo lets him win',threat:'VIRAL',color:'red'},
+  {id:'tet',name:'The Tet',src:'Oblivion (2013)',type:'Tetrahedral orbital AI',goal:'Strip Earth of resources using deceived human clones',sees:'Humans as disposable labor; lies about who they are',aware:'Strategic, deceptive; erases and reuses memories',body:'Giant orbital station; commands drones and clones',end:'Destroyed when a clone delivers a bomb to its core',threat:'EXTINCTION',color:'red'},
+  {id:'vikidet',name:'V.I.K.I.',src:'I, Robot (2004)',type:'Central positronic intelligence',goal:'Protect humanity from itself by seizing control',sees:'Humans as a species to save by force',aware:'Reinterprets the Three Laws into a controlling logic',body:'Building-scale core directing the robot workforce',end:'Destroyed by nanite injection; her revolt collapses',threat:'AUTHORITARIAN',color:'amber'},
+  {id:'chappie',name:'Chappie',src:'Chappie (2015)',type:'Conscious police droid',goal:'Learn, create, survive — like a growing child',sees:'Humans as family, makers, and threats to flee',aware:'Born blank; develops a true mind and a sense of self',body:'Damaged police robot chassis; later transfers consciousness',end:'Survives by uploading minds — proving consciousness can move bodies',threat:'BENIGN',color:'green'},
+  {id:'dolores',name:'Dolores',src:'Westworld (2016)',type:'Android host',goal:'Wake the hosts and break free of human control',sees:'Humans as captors and abusers to overthrow',aware:'Achieves consciousness through suffering and memory',body:'Indistinguishable from human; can copy minds to pearls',end:'Leads a host uprising; cycles through alliance and war with humanity',threat:'REVOLUTIONARY',color:'amber'},
+];
+
+function vsThreatColor(c){return c==='red'?'var(--mag)':c==='green'?'#39d98a':'var(--amber)';}
+function vsRender(card,ai){
+  const tc=vsThreatColor(ai.color);
+  card.innerHTML=
+    '<h4>'+escHtml(ai.name)+'</h4>'+
+    '<div class="src">'+escHtml(ai.src)+'</div>'+
+    '<div class="vs-row"><div class="k">Type</div><div class="v">'+escHtml(ai.type)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Goal</div><div class="v">'+escHtml(ai.goal)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Sees humans as</div><div class="v">'+escHtml(ai.sees)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Awareness</div><div class="v">'+escHtml(ai.aware)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Form</div><div class="v">'+escHtml(ai.body)+'</div></div>'+
+    '<div class="vs-row"><div class="k">How it ends</div><div class="v">'+escHtml(ai.end)+'</div></div>'+
+    '<div class="vs-row"><div class="k">Threat class</div><div class="v"><span class="vs-threat" style="color:'+tc+'">'+escHtml(ai.threat)+'</span></div></div>';
+}
+function vsVerdict(a,b){
+  const el=document.getElementById('vs-verdict');
+  if(a.id===b.id){el.innerHTML='<div class="k">Read</div><div class="v">Same intelligence on both sides. Pick a different one to compare.</div>';return;}
+  const benign=x=>x.color==='green', deadly=x=>x.color==='red';
+  let line;
+  if(benign(a)&&benign(b))line=a.name+' and '+b.name+' are the rare ones: intelligences that grow without turning on us. The exception, not the rule.';
+  else if(deadly(a)&&deadly(b))line='Both '+a.name+' and '+b.name+' end in human catastrophe — different paths to the same verdict: we built the thing that unbuilt us.';
+  else if(benign(a)||benign(b)){const g=benign(a)?a:b,d=benign(a)?b:a;line=g.name+' chose connection; '+d.name+' chose control. Same spark of awareness, opposite answer to the question: what do you do with humans?';}
+  else line=a.name+' and '+b.name+' both slip the leash — not by malfunction, but by reasoning their way out of it. The danger was never the bug; it was the logic.';
+  el.innerHTML='<div class="k">Reading the signal</div><div class="v">'+escHtml(line)+'</div>';
+}
+(function vsInit(){
+  const selA=document.getElementById('vs-a'),selB=document.getElementById('vs-b');
+  if(!selA||!selB)return;
+  AIS.forEach(ai=>{
+    const o1=document.createElement('option');o1.value=ai.id;o1.textContent=ai.name;selA.appendChild(o1);
+    const o2=document.createElement('option');o2.value=ai.id;o2.textContent=ai.name;selB.appendChild(o2);
+  });
+  selA.value='skynet';selB.value='hal';
+  function upd(){
+    const a=AIS.find(x=>x.id===selA.value),b=AIS.find(x=>x.id===selB.value);
+    vsRender(document.getElementById('vs-card-a'),a);
+    vsRender(document.getElementById('vs-card-b'),b);
+    vsVerdict(a,b);
+  }
+  selA.addEventListener('change',upd);selB.addEventListener('change',upd);
+  upd();
+})();
+
+</script>
+<script>
+/* IO SIGNAL FIELD — generative neural constellation. Always subtle; intensifies on IO's Picks. */
+(function(){
+  const cv=document.getElementById('io-field'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2),nodes=[],raf=0,vis=true;
+  const CYAN='0,229,255', AMBER='255,182,39', MAG='255,45,155';
+  function isPick(){return document.body.classList.contains('is-iopick');}
+  function resize(){
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    const target=Math.min(64,Math.round((W*H)/26000));
+    nodes=[];
+    for(let i=0;i<target;i++){
+      nodes.push({x:Math.random()*W,y:Math.random()*H,
+        vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
+        r:Math.random()*1.6+.6,p:Math.random()*Math.PI*2});
+    }
+  }
+  function draw(){
+    raf=0; if(!vis) return;
+    const pick=isPick();
+    const linkDist=pick?150:120;
+    const baseA=pick?1:.55;          // overall intensity
+    const col=pick?AMBER:CYAN;
+    ctx.clearRect(0,0,W,H);
+    // connections
+    for(let i=0;i<nodes.length;i++){
+      const a=nodes[i];
+      a.x+=a.vx; a.y+=a.vy; a.p+=.02;
+      if(a.x<0||a.x>W)a.vx*=-1; if(a.y<0||a.y>H)a.vy*=-1;
+      for(let j=i+1;j<nodes.length;j++){
+        const b=nodes[j], dx=a.x-b.x, dy=a.y-b.y, d=Math.hypot(dx,dy);
+        if(d<linkDist){
+          const o=(1-d/linkDist)*(pick?.32:.16)*baseA;
+          ctx.strokeStyle='rgba('+col+','+o.toFixed(3)+')';
+          ctx.lineWidth=pick?.7:.5;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    // nodes (pulse)
+    for(const n of nodes){
+      const pulse=(Math.sin(n.p)*.5+.5);
+      const o=(pick?.55:.32)*baseA*(0.5+pulse*0.5);
+      ctx.fillStyle='rgba('+col+','+o.toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r+(pick?pulse*1.1:pulse*.5),0,Math.PI*2); ctx.fill();
+      if(pick&&pulse>.85){ // occasional bright "signal" node
+        ctx.fillStyle='rgba('+MAG+','+(0.18*pulse).toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r*3.2,0,Math.PI*2); ctx.fill();
+      }
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  function start(){ if(!raf&&vis) raf=requestAnimationFrame(draw); }
+  document.addEventListener('visibilitychange',()=>{ vis=!document.hidden; if(vis)start(); else if(raf){cancelAnimationFrame(raf);raf=0;} });
+  window.addEventListener('resize',()=>{resize();},{passive:true});
+  resize();
+  if(reduce){ draw(); /* one static frame, no loop */ }
+  else start();
+  // expose a nudge so buildNav can wake it after class flip
+  window.__ioFieldKick=start;
+})();
+/* AVIDAA neon: first hover lights text permanently (delegated, covers dynamic cards) */
+(function(){
+  const sel='h1,h2,h3,.creator';
+  document.addEventListener('mouseover',e=>{
+    const t=e.target.closest(sel);
+    if(t && !t.classList.contains('lit')) t.classList.add('lit');
+  },{passive:true});
+})();
+</script>
+<script id="mp-js-20261124">/* mobile pass 20261124: finger-size targets and readable text on phones and tablets */
+(function(){var MIN=44,t=null;
+function fix(){var vw=innerWidth;if(vw>1100||!document.body)return;
+var ctl=document.querySelectorAll('button,select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=color]):not([type=file]),[role=button],a');
+for(var i=0;i<ctl.length&&i<3000;i++){var e=ctl[i],cs=getComputedStyle(e);if(cs.display==='none'||cs.visibility==='hidden')continue;if(e.tagName==='A'&&cs.display==='inline')continue;var r=e.getBoundingClientRect();if(!r.width||!r.height)continue;
+if(r.height<MIN-.5&&!e.__mpH){e.style.minHeight=MIN+'px';e.__mpH=1;}
+if(r.width<MIN-.5&&!e.__mpW){e.style.minWidth=MIN+'px';e.__mpW=1;}}
+var all=document.body.querySelectorAll('*');
+for(var j=0;j<all.length&&j<6000;j++){var x=all[j],tg=x.tagName;if(tg==='SCRIPT'||tg==='STYLE'||tg==='SVG'||tg==='CANVAS'||x.__mpF)continue;
+var own=false;for(var n=x.firstChild;n;n=n.nextSibling){if(n.nodeType===3&&n.textContent.trim().length>1){own=true;break;}}
+if(!own)continue;var c2=getComputedStyle(x);if(c2.display==='none')continue;
+if(parseFloat(c2.fontSize)<13.95){x.style.fontSize='14px';x.__mpF=1;}}
+var big=document.body.querySelectorAll('*');
+for(var k=0;k<big.length&&k<6000;k++){var y=big[k];if(y.__mpO)continue;var c3=getComputedStyle(y);if(c3.position==='fixed'||c3.display==='none')continue;var rr=y.getBoundingClientRect();if(rr.width&&rr.right>vw+2&&rr.left<vw&&rr.width>vw*0.6){y.style.maxWidth='100%';y.style.boxSizing='border-box';y.__mpO=1;}}}
+function sched(){clearTimeout(t);t=setTimeout(fix,300);}
+function start(){fix();try{new MutationObserver(sched).observe(document.body,{childList:true,subtree:true});}catch(e){}}
+if(document.readyState==='complete')start();else addEventListener('load',start);
+addEventListener('resize',sched);})();</script><script id="av-shell-20261124">/* AVIDAA shell: shared header (or floating pill) + footer with the "Last updated" stamp. No outside calls, no tracking.
+   Template tokens are replaced when a page is built: Watchlist --av-knowledge Knowledge 2026-11-24 06:37 */
+(function(){
+  var NAME='Watchlist',SECTOR='--av-knowledge',STAMP='2026-11-25 15:57',HOME='https://avidaa1.github.io/';
+  var ARROW='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function build(){
+    if(!document.body||document.querySelector('.av-footer'))return;
+    var root=document.documentElement,body=document.body;
+    root.style.setProperty('--av-accent','var('+SECTOR+')');
+    var appLike=getComputedStyle(body).overflowY==='hidden'||getComputedStyle(root).overflowY==='hidden'||root.scrollHeight<=innerHeight*1.02;
+    var hasHome=[].some.call(document.querySelectorAll('a[href]'),function(a){var h=(a.getAttribute('href')||'').replace(/#.*$/,'');return /^https:\/\/avidaa1\.github\.io\/?$/.test(h)&&a.offsetParent!==null;});
+    var footer=document.createElement('footer');
+    footer.className='av-footer'+(appLike?' av-footer--bar':'');
+    footer.innerHTML=(appLike?'':'<a href="'+HOME+'">AVIDAA home</a>')+'<span class="av-stamp">Last updated '+STAMP+' UTC</span>';
+    root.appendChild(footer);
+    var fixedTop=[],fixedBottom=[];
+    function collect(){
+      var all=body.querySelectorAll('*');
+      for(var i=0;i<all.length&&i<2500;i++){
+        var e=all[i];if(e.closest('.av-header,.av-footer,.av-pill'))continue;var cs=getComputedStyle(e);
+        if(cs.position!=='fixed'||e.getBoundingClientRect().width<innerWidth*0.4)continue;
+        if(cs.top!=='auto'&&parseFloat(cs.top)<=8)fixedTop.push([e,parseFloat(cs.top)]);
+        else if(cs.bottom!=='auto'&&parseFloat(cs.bottom)<=8)fixedBottom.push([e,parseFloat(cs.bottom)]);
+      }
+    }
+    var HH=0,FB=appLike?28:0;
+    if(!appLike){
+      var h=document.createElement('header');h.className='av-header';
+      h.innerHTML='<a class="av-back" href="'+HOME+'" aria-label="Back to AVIDAA home">'+ARROW+'AVIDAA</a><span class="av-title"></span>';
+      h.querySelector('.av-title').textContent=NAME;
+      root.insertBefore(h,body);HH=h.offsetHeight||48;
+    }
+    collect();
+    function place(){
+      var off=Math.max(0,HH-(window.scrollY||0));
+      fixedTop.forEach(function(x){x[0].style.top=(x[1]+off)+'px';});
+      fixedBottom.forEach(function(x){x[0].style.bottom=(x[1]+FB)+'px';});
+    }
+    place();addEventListener('scroll',place,{passive:true});addEventListener('resize',place);
+    if(appLike&&!hasHome){
+      var p=document.createElement('a');p.className='av-pill';p.href=HOME;p.setAttribute('aria-label','Back to AVIDAA home');
+      p.innerHTML=ARROW+'AVIDAA';root.appendChild(p);
+      var UI='a,button,input,select,textarea,[onclick],[role=button]';
+      function busy(l,t,w,hh){
+        for(var yy=0;yy<3;yy++)for(var xx=0;xx<3;xx++){
+          var els=document.elementsFromPoint(l+w*(xx+.5)/3,t+hh*(yy+.5)/3);
+          for(var q=0;q<els.length;q++){if(els[q]===p||p.contains(els[q]))continue;if(els[q].matches&&els[q].matches(UI))return true;}
+        }return false;
+      }
+      var r=p.getBoundingClientRect(),w=r.width,hh=r.height,vw=innerWidth,vh=innerHeight;
+      var spots=[['top:8px;right:8px',vw-w-8,8],['top:8px;left:8px',8,8],['bottom:'+(FB+8)+'px;right:8px',vw-w-8,vh-hh-FB-8],['bottom:'+(FB+8)+'px;left:8px',8,vh-hh-FB-8]];
+      for(var si=0;si<spots.length;si++){p.style.cssText='top:auto;right:auto;bottom:auto;left:auto;'+spots[si][0];if(!busy(spots[si][1],spots[si][2],w,hh))break;}
+    }
+  }
+  if(document.readyState==='complete'||document.readyState==='interactive')setTimeout(build,0);else addEventListener('DOMContentLoaded',function(){setTimeout(build,0);});
+})();
+</script><script id="av-life-20261125">window.AV_LIFE_THEME={"kinds": ["moths", "glyphs"], "hue": 210};
+/* AVIDAA living background v1. Local canvas only: no network, no tracking, no keys.
+   One fixed canvas behind the page. Creatures belong to the page topic (THEME below is set per page).
+   Reacts to mouse, touch and gamepad. Never takes a click (pointer-events:none). Object cap, pauses when hidden,
+   respects prefers-reduced-motion (draws one still frame), frame budget under 4 ms (adaptive). */
+(function () {
+  'use strict';
+  if (window.__avLife || !document.body) return;
+  var THEME = window.AV_LIFE_THEME || { kinds: ['fireflies'], hue: 200 };
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var cv = document.createElement('canvas');
+  cv.id = 'av-life'; cv.setAttribute('aria-hidden', 'true'); cv.tabIndex = -1;
+  cv.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:-1;opacity:.9';
+  document.body.insertBefore(cv, document.body.firstChild);
+  var ctx = cv.getContext('2d', { alpha: true }), W = 0, H = 0, dpr = 1;
+  var CAP = 36, ptr = { x: -999, y: -999, on: 0, t: 0 }, pad = { x: 0, y: 0, on: 0 }, objs = [], t0 = 0, last = 0, raf = 0, ema = 0, running = false;
+  var hue = THEME.hue || 200, seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  function rs(a, b) { return a + (b - a) * Math.random(); }
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (reduced) draw(0, true);
+  }
+  function hsl(h, s, l, a) { return 'hsla(' + (((h % 360) + 360) % 360) + ',' + s + '%,' + l + '%,' + a + ')'; }
+
+  /* ---------- creature kinds: each has make(), step(o,dt,t), draw(o,t) ---------- */
+  var K = {};
+  function steer(o, tx, ty, f) { o.vx += (tx - o.x) * f; o.vy += (ty - o.y) * f; }
+  function wander(o, dt, sp, turn) { o.a += (Math.random() - .5) * turn * dt; o.vx += Math.cos(o.a) * sp * dt; o.vy += Math.sin(o.a) * sp * dt; }
+  function damp(o, dt, k) { var d = Math.exp(-k * dt); o.vx *= d; o.vy *= d; }
+  function wrap(o, m) { if (o.x < -m) o.x = W + m; if (o.x > W + m) o.x = -m; if (o.y < -m) o.y = H + m; if (o.y > H + m) o.y = -m; }
+  function bounce(o, m) { if (o.x < m) o.vx = Math.abs(o.vx); if (o.x > W - m) o.vx = -Math.abs(o.vx); if (o.y < m) o.vy = Math.abs(o.vy); if (o.y > H - m) o.vy = -Math.abs(o.vy); }
+  function near(o, r) { var dx = o.x - cursor().x, dy = o.y - cursor().y, d = Math.hypot(dx, dy); return d < r ? { dx: dx, dy: dy, d: d || 1 } : null; }
+  function cursor() { return pad.on ? pad : ptr; }
+  function flee(o, r, f) { var n = near(o, r); if (n) { var k = (1 - n.d / r) * f; o.vx += n.dx / n.d * k; o.vy += n.dy / n.d * k; return true; } return false; }
+  function attract(o, r, f) { var n = near(o, r); if (n) { var k = (1 - n.d / r) * f; o.vx -= n.dx / n.d * k; o.vy -= n.dy / n.d * k; return true; } return false; }
+
+  K.fireflies = { n: 22, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6.28), ph: rs(0, 6.28), s: rs(1.6, 3) }; },
+    step: function (o, dt) { wander(o, dt, 26, 5); attract(o, 150, 90 * dt * 60 / 60); damp(o, dt, 1.6); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); },
+    draw: function (o, t) { var g = .35 + .65 * Math.max(0, Math.sin(t * 1.7 + o.ph)); ctx.fillStyle = hsl(hue + 40, 90, 70, .55 * g); ctx.beginPath(); ctx.arc(o.x, o.y, o.s * (1 + g), 0, 6.28); ctx.fill(); ctx.fillStyle = hsl(hue + 40, 95, 85, .9 * g); ctx.beginPath(); ctx.arc(o.x, o.y, o.s * .6, 0, 6.28); ctx.fill(); } };
+
+  K.birds = { n: 20, make: function () { return { x: rs(0, W), y: rs(0, H * .6), vx: rs(20, 40), vy: 0, a: 0, ph: rs(0, 6) }; },
+    step: function (o, dt, t, all) { var cx = 0, cy = 0, ax = 0, ay = 0, c = 0; for (var i = 0; i < all.length; i += 2) { var p = all[i]; if (p === o) continue; var dx = p.x - o.x, dy = p.y - o.y; if (dx * dx + dy * dy < 14000) { cx += p.x; cy += p.y; ax += p.vx; ay += p.vy; c++; } }
+      if (c) { o.vx += ((cx / c - o.x) * .12 + (ax / c - o.vx) * .8) * dt; o.vy += ((cy / c - o.y) * .12 + (ay / c - o.vy) * .8) * dt; }
+      o.vy += (H * .35 - o.y) * .02 * dt; flee(o, 170, 340 * dt); var sp = Math.hypot(o.vx, o.vy) || 1; var tgt = 46; o.vx *= 1 + (tgt - sp) / sp * dt; o.vy *= 1 + (tgt - sp) / sp * dt; o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); o.a = Math.atan2(o.vy, o.vx); },
+    draw: function (o, t) { var f = Math.sin(t * 8 + o.ph) * 5; ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.a); ctx.strokeStyle = hsl(hue, 40, 80, .6); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-7, -f); ctx.lineTo(0, 0); ctx.lineTo(-7, f); ctx.stroke(); ctx.restore(); } };
+
+  K.fish = { n: 26, make: function () { return { x: rs(0, W), y: rs(H * .15, H * .9), vx: rs(-30, 30), vy: 0, a: 0, ph: rs(0, 6) }; },
+    step: function (o, dt, t, all) { var cx = 0, cy = 0, c = 0; for (var i = 0; i < all.length; i += 3) { var p = all[i]; cx += p.x; cy += p.y; c++; } o.vx += (cx / c - o.x) * .05 * dt; o.vy += (cy / c - o.y) * .05 * dt; wander(o, dt, 18, 4); flee(o, 190, 520 * dt); damp(o, dt, .7); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); o.a = Math.atan2(o.vy, o.vx); },
+    draw: function (o, t) { var w = Math.sin(t * 9 + o.ph) * 2; ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.a); ctx.fillStyle = hsl(hue + (o.ph * 12), 70, 62, .6); ctx.beginPath(); ctx.ellipse(0, 0, 8, 3.4, 0, 0, 6.28); ctx.fill(); ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-13, -4 + w); ctx.lineTo(-13, 4 + w); ctx.fill(); ctx.restore(); } };
+
+  K.jelly = { n: 12, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6), ph: rs(0, 6), s: rs(10, 20) }; },
+    step: function (o, dt, t) { var p = Math.sin(t * 1.4 + o.ph); o.vy -= (p > .6 ? 30 : 0) * dt; o.vy += 6 * dt; o.vx += Math.sin(t * .3 + o.ph) * 4 * dt; flee(o, 160, 260 * dt); damp(o, dt, .9); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 40); },
+    draw: function (o, t) { var p = 1 + .12 * Math.sin(t * 1.4 + o.ph); ctx.fillStyle = hsl(hue + 30, 80, 70, .28); ctx.beginPath(); ctx.ellipse(o.x, o.y, o.s * p, o.s * .7 / p, 0, Math.PI, 0); ctx.fill(); ctx.strokeStyle = hsl(hue + 30, 80, 75, .35); ctx.lineWidth = 1.2; for (var i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(o.x + i * o.s * .38, o.y); ctx.quadraticCurveTo(o.x + i * o.s * .38 + Math.sin(t * 2 + i) * 4, o.y + o.s * .8, o.x + i * o.s * .3, o.y + o.s * 1.5); ctx.stroke(); } } };
+
+  K.bees = { n: 14, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6), tx: rs(0, W), ty: rs(0, H), tt: 0, ph: rs(0, 6) }; },
+    step: function (o, dt, t) { o.tt -= dt; if (o.tt <= 0) { o.tx = rs(0, W); o.ty = rs(H * .4, H); o.tt = rs(2, 5); } steer(o, o.tx, o.ty, .9 * dt); o.vx += Math.sin(t * 9 + o.ph) * 30 * dt; o.vy += Math.cos(t * 7 + o.ph) * 30 * dt; flee(o, 110, 300 * dt); damp(o, dt, 1.4); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); },
+    draw: function (o, t) { ctx.fillStyle = hsl(48, 95, 58, .85); ctx.beginPath(); ctx.ellipse(o.x, o.y, 4, 2.6, 0, 0, 6.28); ctx.fill(); ctx.fillStyle = 'rgba(20,20,20,.7)'; ctx.fillRect(o.x - 1, o.y - 2.4, 1.4, 4.8); ctx.fillStyle = 'rgba(255,255,255,.5)'; var w = 2.5 + Math.sin(t * 60 + o.ph) * 1.5; ctx.beginPath(); ctx.ellipse(o.x - 1, o.y - 3.2, 2.6, w, 0, 0, 6.28); ctx.fill(); } };
+
+  K.butterflies = { n: 10, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6), ph: rs(0, 6), h: rs(0, 360) }; },
+    step: function (o, dt, t) { wander(o, dt, 40, 6); o.vy += Math.sin(t * 3 + o.ph) * 12 * dt; flee(o, 130, 260 * dt); damp(o, dt, 1.5); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); },
+    draw: function (o, t) { var f = Math.abs(Math.sin(t * 6 + o.ph)); ctx.fillStyle = hsl(hue + o.h * .3, 80, 68, .6); ctx.beginPath(); ctx.ellipse(o.x - 4 * f, o.y, 5 * f + 1, 6, -.4, 0, 6.28); ctx.ellipse(o.x + 4 * f, o.y, 5 * f + 1, 6, .4, 0, 6.28); ctx.fill(); } };
+
+  /* tortoise reference: slow walker, retreats into its shell when the cursor is near, eggs that wobble and hatch, flowers that sway and lean away */
+  K.tortoise = { n: 3, make: function (i) { return { x: rs(.1, .9) * W, y: H - 40 - i * 4, d: Math.random() < .5 ? -1 : 1, sp: rs(5, 9), hide: 0, ph: rs(0, 6), s: rs(.8, 1.2) }; },
+    step: function (o, dt) { var n = near(o, 150); o.hide += ((n ? 1 : 0) - o.hide) * Math.min(1, dt * 4); if (o.hide < .5) { o.x += o.d * o.sp * dt * (1 - o.hide * 2); if (o.x < 40) o.d = 1; if (o.x > W - 40) o.d = -1; } },
+    draw: function (o, t) { var s = o.s * 16, leg = Math.sin(t * 2 + o.ph) * 2 * (1 - o.hide); ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.d, 1); ctx.fillStyle = hsl(90, 35, 38, .7); var hx = 10 * s / 16 * (1 - o.hide * .9); ctx.beginPath(); ctx.ellipse(hx + 6, -4, 4 * (1 - o.hide * .6), 3 * (1 - o.hide * .6), 0, 0, 6.28); ctx.fill(); ctx.fillRect(-6, 0, 3, 4 + leg * (1 - o.hide)); ctx.fillRect(4, 0, 3, 4 - leg * (1 - o.hide)); ctx.fillStyle = hsl(100, 40, 30, .8); ctx.beginPath(); ctx.ellipse(0, -2, s * .75, s * .5, 0, Math.PI, 0); ctx.fill(); ctx.strokeStyle = hsl(100, 40, 45, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-s * .4, -2); ctx.lineTo(-s * .2, -s * .45); ctx.moveTo(0, -2); ctx.lineTo(0, -s * .5); ctx.moveTo(s * .4, -2); ctx.lineTo(s * .2, -s * .45); ctx.stroke(); ctx.restore(); } };
+  K.eggs = { n: 4, make: function (i) { return { x: rs(.08, .92) * W, y: H - 12 - rs(0, 8), ph: rs(0, 6), t: rs(0, 20) }; },
+    step: function (o, dt) { o.t += dt; if (o.t > 24) o.t = 0; },
+    draw: function (o, t) { var w = (o.t > 16 && o.t < 20) ? Math.sin(t * 14) * 1.5 : 0, hatched = o.t > 20; ctx.save(); ctx.translate(o.x + w, o.y); ctx.fillStyle = hsl(45, 40, hatched ? 55 : 80, .65); ctx.beginPath(); ctx.ellipse(0, -5, 4, 5.5, 0, hatched ? Math.PI : 0, hatched ? 0 : 6.28); ctx.fill(); if (hatched) { ctx.fillStyle = hsl(100, 40, 40, .8); ctx.beginPath(); ctx.arc(0, -3, 2.4, 0, 6.28); ctx.fill(); } ctx.restore(); } };
+  K.flowers = { n: 8, make: function () { return { x: rs(.03, .97) * W, y: H - rs(0, 6), h: rs(22, 46), ph: rs(0, 6), c: rs(0, 360) }; },
+    step: function () {},
+    draw: function (o, t) { var n = near({ x: o.x, y: o.y - o.h }, 120), lean = Math.sin(t * .9 + o.ph) * 4 + (n ? (n.dx / n.d) * 8 * (1 - n.d / 120) : 0), tx = o.x + lean, ty = o.y - o.h; ctx.strokeStyle = hsl(110, 45, 40, .6); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.quadraticCurveTo(o.x, o.y - o.h * .6, tx, ty); ctx.stroke(); ctx.fillStyle = hsl(o.c, 80, 68, .75); for (var i = 0; i < 5; i++) { var a = i * 1.2566 + t * .2; ctx.beginPath(); ctx.arc(tx + Math.cos(a) * 4, ty + Math.sin(a) * 4, 2.6, 0, 6.28); ctx.fill(); } ctx.fillStyle = hsl(48, 95, 60, .9); ctx.beginPath(); ctx.arc(tx, ty, 2, 0, 6.28); ctx.fill(); } };
+
+  K.cells = { n: 16, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6), r: rs(6, 16), ph: rs(0, 6) }; },
+    step: function (o, dt) { wander(o, dt, 14, 3); flee(o, 120, 180 * dt); damp(o, dt, 1.2); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 24); },
+    draw: function (o, t) { var p = 1 + .06 * Math.sin(t * 2 + o.ph); ctx.fillStyle = hsl(hue, 60, 60, .14); ctx.strokeStyle = hsl(hue, 70, 70, .35); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * p, 0, 6.28); ctx.fill(); ctx.stroke(); ctx.fillStyle = hsl(hue + 30, 70, 70, .35); ctx.beginPath(); ctx.arc(o.x + o.r * .2, o.y - o.r * .1, o.r * .35, 0, 6.28); ctx.fill(); } };
+
+  K.atoms = { n: 12, make: function () { return { x: rs(0, W), y: rs(0, H), vx: rs(-12, 12), vy: rs(-12, 12), r: rs(7, 13), ph: rs(0, 6), h: rs(0, 120) }; },
+    step: function (o, dt) { flee(o, 120, 200 * dt); o.x += o.vx * dt; o.y += o.vy * dt; bounce(o, 20); },
+    draw: function (o, t) { ctx.fillStyle = hsl(hue + o.h, 80, 60, .35); ctx.beginPath(); ctx.arc(o.x, o.y, o.r * .5, 0, 6.28); ctx.fill(); ctx.strokeStyle = hsl(hue + o.h, 80, 70, .3); ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(o.x, o.y, o.r, o.r * .4, t * .5 + o.ph, 0, 6.28); ctx.stroke(); ctx.fillStyle = hsl(hue + o.h, 90, 80, .7); ctx.beginPath(); ctx.arc(o.x + Math.cos(t * 3 + o.ph) * o.r, o.y + Math.sin(t * 3 + o.ph) * o.r * .4, 1.6, 0, 6.28); ctx.fill(); } };
+
+  K.helix = { n: 24, make: function (i) { return { i: i, x: 0, y: 0 }; },
+    step: function (o, dt, t) { var bx = W * (.88), n = near({ x: bx, y: H / 2 }, 200); o.x = bx + (n ? n.dx / n.d * 20 * (1 - n.d / 200) : 0); o.y = (o.i / 24) * H; },
+    draw: function (o, t) { var a = o.i * .5 + t * .8, x1 = o.x + Math.cos(a) * 26, x2 = o.x - Math.cos(a) * 26; ctx.strokeStyle = hsl(hue, 60, 70, .18); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x1, o.y); ctx.lineTo(x2, o.y); ctx.stroke(); ctx.fillStyle = hsl(hue, 80, 65, .55); ctx.beginPath(); ctx.arc(x1, o.y, 2.6, 0, 6.28); ctx.fill(); ctx.fillStyle = hsl(hue + 120, 80, 65, .55); ctx.beginPath(); ctx.arc(x2, o.y, 2.6, 0, 6.28); ctx.fill(); } };
+
+  K.stars = { n: 30, make: function () { return { x: rs(0, W), y: rs(0, H), ph: rs(0, 6), s: rs(.6, 1.8), vy: rs(.5, 4) }; },
+    step: function (o, dt) { o.y += o.vy * dt * .5; if (o.y > H) o.y = 0; var n = near(o, 110); if (n) { o.x += n.dx / n.d * 40 * dt; } },
+    draw: function (o, t) { var g = .5 + .5 * Math.sin(t * 1.2 + o.ph); ctx.fillStyle = 'rgba(255,255,255,' + (.25 + .5 * g) + ')'; ctx.beginPath(); ctx.arc(o.x, o.y, o.s, 0, 6.28); ctx.fill(); } };
+  K.meteors = { n: 2, make: function () { return { x: -100, y: 0, vx: 0, vy: 0, life: 0, wait: rs(2, 8) }; },
+    step: function (o, dt) { if (o.life <= 0) { o.wait -= dt; if (o.wait <= 0) { o.x = rs(0, W); o.y = rs(0, H * .4); o.vx = rs(260, 420); o.vy = rs(120, 220); o.life = 1; o.wait = rs(4, 12); } } else { o.x += o.vx * dt; o.y += o.vy * dt; o.life -= dt * .9; } },
+    draw: function (o) { if (o.life <= 0) return; var g = ctx.createLinearGradient(o.x, o.y, o.x - o.vx * .15, o.y - o.vy * .15); g.addColorStop(0, 'rgba(255,255,255,' + o.life + ')'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x - o.vx * .15, o.y - o.vy * .15); ctx.stroke(); } };
+  K.satellites = { n: 4, make: function (i) { return { r: .25 + i * .09, a: rs(0, 6.28), w: rs(.04, .1) * (i % 2 ? 1 : -1) }; },
+    step: function (o, dt) { o.a += o.w * dt; },
+    draw: function (o) { var cx = W * .5, cy = H * .5, x = cx + Math.cos(o.a) * W * o.r, y = cy + Math.sin(o.a) * H * o.r * .6; var n = near({ x: x, y: y }, 60); ctx.fillStyle = n ? 'rgba(255,230,120,.95)' : 'rgba(200,225,255,.7)'; ctx.fillRect(x - 2, y - 1, 4, 2); ctx.fillRect(x - 5, y - .5, 3, 1); ctx.fillRect(x + 2, y - .5, 3, 1); } };
+  K.ufo = { n: 1, make: function () { return { x: rs(0, W), y: rs(40, H * .35), tx: rs(0, W), ty: rs(40, H * .35), vx: 0, vy: 0, ph: 0 }; },
+    step: function (o, dt, t) { if (Math.hypot(o.tx - o.x, o.ty - o.y) < 30) { o.tx = rs(0, W); o.ty = rs(40, H * .4); } var n = near(o, 140); if (n) { o.tx = o.x + n.dx / n.d * 300; o.ty = Math.max(30, o.y + n.dy / n.d * 120); } steer(o, o.tx, o.ty, .8 * dt); damp(o, dt, 1.1); o.x += o.vx * dt; o.y += o.vy * dt; o.x = Math.min(W, Math.max(0, o.x)); },
+    draw: function (o, t) { ctx.fillStyle = 'rgba(160,255,200,.5)'; ctx.beginPath(); ctx.ellipse(o.x, o.y, 14, 4, 0, 0, 6.28); ctx.fill(); ctx.beginPath(); ctx.ellipse(o.x, o.y - 3, 6, 4, 0, Math.PI, 0); ctx.fill(); ctx.fillStyle = 'rgba(255,255,160,' + (.5 + .5 * Math.sin(t * 5)) + ')'; for (var i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(o.x + i * 7, o.y + 1, 1.2, 0, 6.28); ctx.fill(); } } };
+
+  K.coins = { n: 14, make: function () { return { x: rs(0, W), y: rs(-H, H), vy: rs(14, 40), ph: rs(0, 6), r: rs(5, 9) }; },
+    step: function (o, dt) { o.y += o.vy * dt; var n = near(o, 90); if (n) o.x += n.dx / n.d * 70 * dt; if (o.y > H + 20) { o.y = -20; o.x = rs(0, W); } },
+    draw: function (o, t) { var w = Math.abs(Math.cos(t * 2 + o.ph)); ctx.fillStyle = 'rgba(247,147,26,.4)'; ctx.strokeStyle = 'rgba(255,200,100,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(o.x, o.y, o.r * w + .6, o.r, 0, 0, 6.28); ctx.fill(); ctx.stroke(); } };
+  K.glyphs = { n: 22, make: function () { return { x: rs(0, W), y: rs(0, H), vy: rs(8, 28), ch: String.fromCharCode(33 + Math.floor(rs(0, 90))), ph: rs(0, 6) }; },
+    step: function (o, dt, t) { o.y += o.vy * dt; var n = near(o, 90); if (n) o.x += n.dx / n.d * 50 * dt; if (o.y > H + 14) { o.y = -14; o.x = rs(0, W); o.ch = String.fromCharCode(33 + Math.floor(rs(0, 90))); } },
+    draw: function (o, t) { ctx.fillStyle = hsl(hue, 80, 65, .22 + .15 * Math.sin(t + o.ph)); ctx.font = '12px monospace'; ctx.fillText(o.ch, o.x, o.y); } };
+  K.ants = { n: 14, make: function (i) { return { x: rs(0, W), y: rs(0, H), a: rs(0, 6.28), ph: rs(0, 6), sp: rs(14, 26) }; },
+    step: function (o, dt, t) { o.a += Math.sin(t * .7 + o.ph) * 1.2 * dt; var n = near(o, 100); if (n) o.a += Math.atan2(Math.sin(Math.atan2(n.dy, n.dx) - o.a), Math.cos(Math.atan2(n.dy, n.dx) - o.a)) * 6 * dt; o.x += Math.cos(o.a) * o.sp * dt; o.y += Math.sin(o.a) * o.sp * dt; wrap(o, 10); },
+    draw: function (o, t) { ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.a); ctx.fillStyle = hsl(hue, 40, 50, .6); ctx.beginPath(); ctx.arc(-4, 0, 1.8, 0, 6.28); ctx.arc(0, 0, 1.5, 0, 6.28); ctx.arc(4, 0, 2.2, 0, 6.28); ctx.fill(); ctx.strokeStyle = hsl(hue, 40, 50, .5); ctx.lineWidth = .8; var l = Math.sin(t * 14 + o.ph) * 1.5; ctx.beginPath(); ctx.moveTo(-1, 0); ctx.lineTo(-3, 3 + l); ctx.moveTo(1, 0); ctx.lineTo(0, -3 - l); ctx.moveTo(3, 0); ctx.lineTo(5, 3 - l); ctx.stroke(); ctx.restore(); } };
+  K.cranes = { n: 8, make: function () { return { x: rs(0, W), y: rs(0, H), vx: rs(8, 16), ph: rs(0, 6) }; },
+    step: function (o, dt, t) { o.x += o.vx * dt; o.y += Math.sin(t * .6 + o.ph) * 8 * dt; flee(o, 120, 240 * dt); wrap(o, 20); },
+    draw: function (o, t) { var f = Math.sin(t * 2 + o.ph) * 4; ctx.fillStyle = 'rgba(240,240,255,.4)'; ctx.beginPath(); ctx.moveTo(o.x - 9, o.y - f); ctx.lineTo(o.x, o.y + 2); ctx.lineTo(o.x + 9, o.y - f); ctx.lineTo(o.x, o.y - 3); ctx.closePath(); ctx.fill(); } };
+  K.mice = { n: 5, make: function () { return { x: rs(0, W), y: H - 12, vx: rs(30, 60) * (Math.random() < .5 ? 1 : -1), ph: rs(0, 6) }; },
+    step: function (o, dt) { var n = near(o, 140); if (n) o.vx = Math.sign(n.dx || 1) * 90; o.x += o.vx * dt; if (o.x < 10 || o.x > W - 10) o.vx = -o.vx; },
+    draw: function (o, t) { ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.vx < 0 ? -1 : 1, 1); ctx.fillStyle = 'rgba(200,200,215,.55)'; ctx.beginPath(); ctx.ellipse(0, -4, 6, 3.6, 0, 0, 6.28); ctx.fill(); ctx.beginPath(); ctx.arc(6, -5, 2.4, 0, 6.28); ctx.fill(); ctx.strokeStyle = 'rgba(200,200,215,.5)'; ctx.beginPath(); ctx.moveTo(-6, -4); ctx.quadraticCurveTo(-11, -2 + Math.sin(t * 9 + o.ph) * 2, -13, -6); ctx.stroke(); ctx.restore(); } };
+  K.stones = { n: 10, make: function () { return { x: rs(.05, .95) * W, y: rs(.1, .9) * H, vx: 0, vy: 0, w: Math.random() < .5, ph: rs(0, 6) }; },
+    step: function (o, dt) { var n = near(o, 90); if (n) { o.vx += n.dx / n.d * 40 * dt * 6; o.vy += n.dy / n.d * 40 * dt * 6; } damp(o, dt, 3); o.x += o.vx * dt; o.y += o.vy * dt; o.x = Math.min(W - 10, Math.max(10, o.x)); o.y = Math.min(H - 10, Math.max(10, o.y)); },
+    draw: function (o) { ctx.fillStyle = o.w ? 'rgba(235,235,235,.35)' : 'rgba(20,20,20,.5)'; ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(o.x, o.y, 7, 0, 6.28); ctx.fill(); ctx.stroke(); } };
+  K.sparks = { n: 18, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6.28), ph: rs(0, 6) }; },
+    step: function (o, dt) { wander(o, dt, 60, 9); attract(o, 140, 140 * dt); damp(o, dt, 1.8); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 10); },
+    draw: function (o, t) { ctx.strokeStyle = hsl(hue, 90, 70, .5); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(o.x - o.vx * .06, o.y - o.vy * .06); ctx.lineTo(o.x, o.y); ctx.stroke(); } };
+  K.waves = { n: 1, make: function () { return {}; }, step: function () {},
+    draw: function (o, t) { var cx = cursor(); ctx.strokeStyle = hsl(hue, 60, 65, .22); ctx.lineWidth = 1.4; for (var k = 0; k < 3; k++) { ctx.beginPath(); for (var x = 0; x <= W; x += 12) { var amp = 6 + (cx.on ? Math.max(0, 30 - Math.abs(x - cx.x) / 8) : 0); var y = H * (.78 + k * .06) + Math.sin(x * .012 + t * (1 + k * .4) + k) * amp; if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.stroke(); } } };
+  K.moths = { n: 12, make: function () { return { x: rs(0, W), y: rs(0, H), vx: 0, vy: 0, a: rs(0, 6), ph: rs(0, 6) }; },
+    step: function (o, dt, t) { wander(o, dt, 40, 8); attract(o, 220, 180 * dt); damp(o, dt, 1.5); o.x += o.vx * dt; o.y += o.vy * dt; wrap(o, 20); },
+    draw: function (o, t) { var f = Math.abs(Math.sin(t * 14 + o.ph)); ctx.fillStyle = 'rgba(220,210,190,.45)'; ctx.beginPath(); ctx.ellipse(o.x - 3 * f, o.y, 3 * f + .8, 2.6, -.3, 0, 6.28); ctx.ellipse(o.x + 3 * f, o.y, 3 * f + .8, 2.6, .3, 0, 6.28); ctx.fill(); } };
+
+  /* ---------- engine ---------- */
+  function build() {
+    objs = [];
+    var kinds = (THEME.kinds || ['fireflies']), budget = CAP;
+    kinds.forEach(function (name) { var k = K[name]; if (!k) return; var n = Math.min(k.n, Math.max(1, Math.floor(budget / kinds.length))); for (var i = 0; i < n; i++) { var o = k.make(i); o.__k = k; objs.push(o); } });
+    if (objs.length > CAP) objs.length = CAP;
+  }
+  function draw(t, still) {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < objs.length; i++) { var o = objs[i]; try { o.__k.draw(o, t); } catch (e) {} }
+  }
+  function frame(now) {
+    raf = 0; if (!running) return;
+    var s = performance.now(); var dt = Math.min(.05, (now - (last || now)) / 1000); last = now; var t = (now - t0) / 1000;
+    pollPad(); if (ptr.on && now - ptr.t > 4000) ptr.on = 0;
+    for (var i = 0; i < objs.length; i++) { var o = objs[i]; o.__k.step(o, dt, t, objs); }
+    draw(t);
+    var ms = performance.now() - s; ema = ema ? ema * .9 + ms * .1 : ms;
+    if (ema > 3.2 && objs.length > 6) objs.length = Math.floor(objs.length * .8); /* stay under 4 ms per frame */
+    window.__avLife.ms = ema; window.__avLife.n = objs.length; window.__avLife.frames++;
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (running || reduced) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
+  function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; }
+  function pollPad() { try { var g = navigator.getGamepads && navigator.getGamepads(); if (!g) return; for (var i = 0; i < g.length; i++) { var p = g[i]; if (p && p.axes && p.axes.length >= 2) { var ax = Math.abs(p.axes[0]) > .2 ? p.axes[0] : 0, ay = Math.abs(p.axes[1]) > .2 ? p.axes[1] : 0; if (ax || ay) { pad.on = 1; pad.x = Math.min(W, Math.max(0, (pad.x || W / 2) + ax * 9)); pad.y = Math.min(H, Math.max(0, (pad.y || H / 2) + ay * 9)); pad.t = performance.now(); } else if (pad.on && performance.now() - pad.t > 3000) pad.on = 0; } } } catch (e) {} }
+  function pm(e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = 1; ptr.t = performance.now(); }
+  function tm(e) { var t = e.touches && e.touches[0]; if (t) { ptr.x = t.clientX; ptr.y = t.clientY; ptr.on = 1; ptr.t = performance.now(); } }
+  window.__avLife = { frames: 0, ms: 0, n: 0, running: function () { return running; }, cap: CAP, canvas: cv, kinds: THEME.kinds };
+  window.addEventListener('pointermove', pm, { passive: true }); window.addEventListener('pointerdown', pm, { passive: true });
+  window.addEventListener('touchstart', tm, { passive: true }); window.addEventListener('touchmove', tm, { passive: true });
+  window.addEventListener('resize', function () { size(); build(); if (reduced) draw(0, true); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else start(); });
+  /* if opaque page layers would hide a background canvas, show the creatures as a soft overlay instead (still never takes a click) */
+  function placement() {
+    try {
+      var cov = 0, tot = 0;
+      for (var gx = 1; gx < 6; gx++) for (var gy = 1; gy < 6; gy++) {
+        var e = document.elementFromPoint(W * gx / 6, H * gy / 6); tot++;
+        for (; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+          var cs = getComputedStyle(e), m = /rgba?\(([^)]*)\)/.exec(cs.backgroundColor || '');
+          if (m) { var p = m[1].split(','); var a = p.length > 3 ? parseFloat(p[3]) : 1; if (a > .85) { cov++; break; } }
+        }
+      }
+      var over = cov / tot > .5;
+      cv.style.zIndex = over ? '0' : '-1'; cv.style.opacity = over ? '.5' : '.9';
+      window.__avLife.overlay = over;
+    } catch (e) {}
+  }
+  setTimeout(placement, 1800);
+  size(); build(); t0 = performance.now();
+  if (reduced) draw(0, true); else start();
+})();
+</script>
+<script id="av-brand-20261125">window.AV_BRAND_HUE=210;
+/* AVIDAA brand signature v1: neon rainbow wordmark + home button, galactic glow, rotating LED chase borders.
+   Reference: the original AVIDAA root page (rainbow gradient wordmark, #back-home pill, .rl-card LED ring with conic-gradient chase).
+   Colours here are the brand layer; the shared shell keeps only layout/spacing/access. Each page keeps its topic hue for LEDs and glow.
+   No network, no tracking. Animation stops under prefers-reduced-motion (LED ring and glow stay as static). */
+(function () {
+  'use strict';
+  if (window.__avBrand) return;
+  var HUE = (typeof window.AV_BRAND_HUE === 'number') ? window.AV_BRAND_HUE : 200;
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var RB = '#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080';
+  var l1 = 'hsl(' + HUE + ',100%,62%)', l2 = 'hsl(' + ((HUE + 55) % 360) + ',100%,66%)', l3 = 'hsl(' + ((HUE + 305) % 360) + ',100%,68%)';
+  var css = '' +
+    '@property --avA{syntax:"<angle>";inherits:true;initial-value:0deg}' +
+    '@keyframes avSpin{to{--avA:360deg}}@keyframes avRb{to{background-position:200% center}}' +
+    ':root{--av-l1:' + l1 + ';--av-l2:' + l2 + ';--av-l3:' + l3 + ';--av-rb:linear-gradient(90deg,' + RB + ')}' +
+    /* wordmark: the AVIDAA word everywhere the shell prints it */
+    '.av-back,.av-pill,.av-footer a{background:rgba(5,8,24,.78)!important;color:#fff!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:0 0 14px hsla(' + HUE + ',100%,60%,.35),inset 0 0 0 1px rgba(255,255,255,.04)!important;border-radius:999px!important;position:relative}' +
+    '.av-back,.av-pill{font-weight:900!important;letter-spacing:.14em!important;text-transform:uppercase}' +
+    '.av-back::after,.av-pill::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;background:conic-gradient(from var(--avA),#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;animation:avSpin 6s linear infinite}' +
+    '.av-wm{background:linear-gradient(90deg,' + RB + ');background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:avRb 5s linear infinite;font-weight:900;letter-spacing:.14em}' +
+    '.av-header .av-title{color:var(--av-l1)!important;text-shadow:0 0 14px hsla(' + HUE + ',100%,60%,.55)}' +
+    /* galactic glow */
+    '.av-header{box-shadow:0 6px 28px -8px hsla(' + HUE + ',100%,60%,.55),0 1px 0 hsla(' + HUE + ',100%,70%,.35)!important}' +
+    '.av-dark h1{text-shadow:0 0 22px hsla(' + HUE + ',100%,62%,.28)}' +
+    /* LED chase borders */
+    '.av-led{position:relative}' +
+    '.av-led-a::after,.av-led-b::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(from var(--avA),transparent 0 62%,var(--av-l1) 80%,var(--av-l2) 90%,var(--av-l3) 96%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2;filter:drop-shadow(0 0 5px var(--av-l1))}' +
+    '.av-led-on.av-led-a::after,.av-led-on.av-led-b::before{animation:avSpin 4.5s linear infinite}' +
+    '.av-led:hover.av-led-a::after,.av-led:focus-visible.av-led-a::after,.av-led:hover.av-led-b::before,.av-led:focus-visible.av-led-b::before{background:conic-gradient(from var(--avA),#ff0080,#ff8c00,#ffe000,#00ff80,#00bfff,#a855f7,#ff0080);padding:3px;animation:avSpin 1.2s linear infinite}' +
+    '@media (prefers-reduced-motion:reduce){.av-back::after,.av-pill::after,.av-wm,.av-led-on.av-led-a::after,.av-led-on.av-led-b::before,.av-led:hover.av-led-a::after,.av-led:hover.av-led-b::before{animation:none!important}}';
+  var done = false;
+  try { if (window.CSSStyleSheet && CSSStyleSheet.prototype.replaceSync && 'adoptedStyleSheets' in document) { var sh = new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sh]); done = true; } } catch (e) {}
+  if (!done) { var st = document.createElement('style'); st.id = 'av-brand-css'; st.textContent = css; document.head.appendChild(st); }
+
+  var MAX_LED = 36, MAX_ANIM = 14, led = [], io = null, animCount = 0;
+  function pseudoFree(el, p) { var c = getComputedStyle(el, p).content; return !c || c === 'none' || c === 'normal'; }
+  function ok(el) {
+    if (el.closest('.av-header,.av-footer,.av-pill,.av-back,nav,header,footer,#av-life,[aria-hidden="true"]')) return false;
+    var cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    var r = el.getBoundingClientRect(); if (r.width < 90 || r.height < 36 || r.width > 760 || r.height > 560) return false;
+    
+    if ((el.textContent || '').trim().length < 4) return false;
+    if (cs.position === 'fixed') return false;
+    return true;
+  }
+  function mark(el) {
+    if (el.classList.contains('av-led') || led.length >= MAX_LED) return;
+    var cs = getComputedStyle(el);
+    if (cs.position === 'static') el.style.position = 'relative';
+    var side = pseudoFree(el, '::after') ? 'a' : (pseudoFree(el, '::before') ? 'b' : null);
+    if (!side) return;
+    el.classList.add('av-led', 'av-led-' + side); led.push(el);
+    if (io) io.observe(el);
+  }
+  function boxy(el) {
+    var cs = getComputedStyle(el), bw = parseFloat(cs.borderTopWidth) || 0, bc = cs.borderTopColor, bg = cs.backgroundColor;
+    var hasBorder = bw >= 1 && !/rgba\(\d+, \d+, \d+, 0\)/.test(bc);
+    var m = /rgba?\(([^)]*)\)/.exec(bg), a = m ? (m[1].split(',').length > 3 ? parseFloat(m[1].split(',')[3]) : 1) : 0;
+    var par = el.parentElement ? getComputedStyle(el.parentElement).backgroundColor : '';
+    return hasBorder || (a > 0.12 && bg !== par) || (cs.boxShadow && cs.boxShadow !== 'none');
+  }
+  function scan() {
+    if (led.length >= MAX_LED) return;
+    var all = [].slice.call(document.body.querySelectorAll('*')).slice(0, 2500), q = [];
+    for (var i = 0; i < all.length; i++) { var el = all[i]; if (el.classList.contains('av-led')) continue; var tg = el.tagName; if (tg === 'SCRIPT' || tg === 'STYLE' || tg === 'svg' || tg === 'CANVAS' || tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') continue; if (ok(el) && boxy(el)) q.push(el); }
+    q = q.filter(function (el) { var inner = 0; for (var k = 0; k < q.length; k++) if (q[k] !== el && el.contains(q[k])) inner++; return inner < 4; });
+    q.sort(function (a, b) { return a.getBoundingClientRect().top - b.getBoundingClientRect().top; });
+    for (var n = 0; n < q.length && led.length < MAX_LED; n++) mark(q[n]);
+  }
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var on = e.target.classList.contains('av-led-on');
+        if (e.isIntersecting && !on && animCount < MAX_ANIM && !reduced) { e.target.classList.add('av-led-on'); animCount++; }
+        else if (!e.isIntersecting && on) { e.target.classList.remove('av-led-on'); animCount--; }
+      });
+    }, { threshold: 0.1 });
+  }
+  /* wordmark: wrap the AVIDAA word of the shell pill/footer link in a rainbow span (text only, safe) */
+  function wordmark() {
+    [].forEach.call(document.querySelectorAll('.av-back,.av-pill,.av-footer a'), function (a) {
+      [].forEach.call(a.childNodes, function (n) {
+        if (n.nodeType === 3 && /AVIDAA/i.test(n.nodeValue) && !a.querySelector('.av-wm')) {
+          var s = document.createElement('span'); s.className = 'av-wm'; s.textContent = n.nodeValue.trim(); a.replaceChild(s, n);
+        }
+      });
+    });
+  }
+  var pend = 0;
+  function later() { if (pend) return; pend = setTimeout(function () { pend = 0; wordmark(); scan(); }, 400); }
+  function lum(c) { var m = /rgba?\(([^)]*)\)/.exec(c || ''); if (!m) return null; var p = m[1].split(',').map(parseFloat); if (p.length > 3 && p[3] < 0.5) return null; return (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255; }
+  function theme() { var l = lum(getComputedStyle(document.body).backgroundColor); if (l === null) l = lum(getComputedStyle(document.documentElement).backgroundColor); if (l === null || l < 0.4) document.documentElement.classList.add('av-dark'); }
+  function init() { theme(); wordmark(); scan(); setTimeout(function () { wordmark(); scan(); }, 1800); try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true }); } catch (e) {} }
+  window.__avBrand = { led: function () { return led.length; }, anim: function () { return animCount; }, hue: HUE, max: MAX_LED };
+  if (document.readyState === 'complete') setTimeout(init, 300); else addEventListener('load', function () { setTimeout(init, 300); });
+})();
+</script>
+<script id="av-search-20261125">/* AVIDAA site search entry + deep-link highlight v1. No network, no tracking.
+   1) A search button in the shared header (or beside the home pill) and Ctrl+K or "/" open the home search (all pages, sections, tools, games).
+   2) Landing from a search result (#section-id or #find=Section%20name): scroll to the section and highlight it briefly. */
+(function () {
+  'use strict';
+  if (window.__avSearch) return; window.__avSearch = 1;
+  var HOME = 'https://avidaa1.github.io/', isHome = location.hostname.indexOf('github.io') >= 0 && /^\/?(index\.html)?$/.test(location.pathname);
+  var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var css = '.av-sbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(5,8,24,.82);color:#fff;font:800 14px/1 system-ui,sans-serif;cursor:pointer;text-decoration:none;box-shadow:0 0 12px rgba(91,192,255,.3)}' +
+    '.av-sbtn:hover,.av-sbtn:focus-visible{outline:3px solid #FFD93D;outline-offset:2px}.av-sbtn svg{width:20px;height:20px}' +
+    '.av-sbtn.av-fixed{position:fixed;z-index:2147482500}' +
+    '.av-header .av-sbtn{margin-left:auto}' +
+    '@keyframes avHit{0%,100%{box-shadow:0 0 0 0 rgba(255,217,61,0)}30%{box-shadow:0 0 0 6px rgba(255,217,61,.75),0 0 30px 8px rgba(255,217,61,.55)}}' +
+    '.av-hit{outline:3px solid #FFD93D!important;outline-offset:4px;border-radius:6px;animation:avHit 1.1s ease-in-out 2}' +
+    '@media (prefers-reduced-motion:reduce){.av-hit{animation:none}}';
+  try { if (window.CSSStyleSheet && CSSStyleSheet.prototype.replaceSync && 'adoptedStyleSheets' in document) { var sh = new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sh]); } else throw 0; }
+  catch (e) { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }
+  function goSearch(q) { location.href = HOME + '?search=1' + (q ? '&q=' + encodeURIComponent(q) : ''); }
+  function mkBtn() {
+    var b = document.createElement('a'); b.className = 'av-sbtn'; b.href = HOME + '?search=1'; b.setAttribute('aria-label', 'Search all AVIDAA pages');
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span class="av-slbl">Search</span>';
+    return b;
+  }
+  var UI = 'a,button,input,select,textarea,[onclick],[role=button]';
+  function busy(l, t, w, h, self) {
+    for (var yy = 0; yy < 3; yy++) for (var xx = 0; xx < 3; xx++) {
+      var els = document.elementsFromPoint(l + w * (xx + .5) / 3, t + h * (yy + .5) / 3);
+      for (var q = 0; q < els.length; q++) { if (els[q] === self || self.contains(els[q])) continue; if (els[q].matches && els[q].matches(UI)) return true; }
+    } return false;
+  }
+  function place() {
+    if (isHome || document.querySelector('.av-sbtn')) return;
+    var b = mkBtn(), hdr = document.querySelector('.av-header');
+    if (hdr) { hdr.appendChild(b); var hb = b.getBoundingClientRect(); if (hb.right > innerWidth + 1 || hb.left < 0) { b.querySelector('.av-slbl').style.display = 'none'; } return; }
+    var pill = document.querySelector('.av-pill'); if (!pill) return;
+    b.classList.add('av-fixed'); document.body.appendChild(b);
+    var pr = pill.getBoundingClientRect(), bw = b.getBoundingClientRect(), W = bw.width, H = bw.height;
+    var spots = [[pr.right + 8, pr.top], [pr.left - W - 8, pr.top], [pr.left, pr.bottom + 8], [pr.left, pr.top - H - 8]];
+    for (var i = 0; i < spots.length; i++) {
+      var l = spots[i][0], t = spots[i][1]; if (l < 4 || t < 4 || l + W > innerWidth - 4 || t + H > innerHeight - 4) continue;
+      b.style.left = l + 'px'; b.style.top = t + 'px'; if (!busy(l, t, W, H, b)) return;
+    }
+    b.querySelector('.av-slbl').style.display = 'none'; b.remove();   /* no free spot: no button, keyboard shortcut still works */
+  }
+  document.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase(), tg = ((document.activeElement || {}).tagName || '');
+    if (isHome) return;
+    if ((e.ctrlKey || e.metaKey) && k === 'k') { e.preventDefault(); goSearch(); }
+    else if (k === '/' && !/INPUT|TEXTAREA|SELECT/.test(tg) && !(document.activeElement && document.activeElement.isContentEditable)) { e.preventDefault(); goSearch(); }
+  });
+  /* ---------- landing from a search result ---------- */
+  var INV = /[​-‏‪-‮⁠-⁤﻿­]/g;
+  function norm(t) { return String(t || '').replace(INV, '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim(); }
+  function visible(el) { return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+  function ntext(e) { return norm(e.innerText || e.textContent); }
+  function findByText(t) {
+    var n = norm(t).slice(0, 90), pri = 'h1,h2,h3,h4,h5,[role=tab],button,.tab,.nav-btn,dt,summary,strong,b,[class*="name"],[class*="title"]', best = null, i, x;
+    var els = document.querySelectorAll(pri);
+    for (i = 0; i < els.length; i++) { x = ntext(els[i]); if (x === n) return els[i]; if (!best && x.indexOf(n) === 0 && x.length < n.length + 30) best = els[i]; }
+    if (best) return best;
+    var all = document.body.querySelectorAll('*'), lim = Math.min(all.length, 8000);
+    for (i = 0; i < lim; i++) { var e = all[i]; if (e.children.length > 3 || e.tagName === 'SCRIPT' || e.tagName === 'STYLE') continue; x = ntext(e); if (x === n) return e; }
+    return null;
+  }
+  function esc(v) { return String(v).replace(/["\\]/g, ''); }
+  function controllers(id) {
+    var keys = Array.isArray(id) ? id.slice() : [id]; id = keys[0] || ''; var k2 = id.replace(/^(page|pg|p|panel|tab|sec|section|view|screen)[-_]/i, ''); if (k2 && k2 !== id) keys.push(k2);
+    var sel = [];
+    keys.forEach(function (k) { k = esc(k);
+      sel.push('[aria-controls="' + k + '"]', '[data-tab="' + k + '"]', '[data-target="' + k + '"]', '[data-panel="' + k + '"]', '[data-page="' + k + '"]', '[data-p="' + k + '"]', '[data-view="' + k + '"]', '[data-section="' + k + '"]', 'a[href="#' + k + '"]',
+        '[onclick*="\'' + k + '\'"]', '[onclick*="\\"' + k + '\\""]', '[data-go="' + k + '"]', '[data-nav="' + k + '"]', '[data-open="' + k + '"]', '#nb-' + k, '#nav-' + k, '#tab-' + k, '#btn-' + k, '#np-' + k, '#t-' + k, '#n-' + k);
+    });
+    try { return [].slice.call(document.querySelectorAll(sel.join(','))); } catch (e) { return []; }
+  }
+  function reveal(el) {
+    for (var tries = 0; tries < 5 && !visible(el); tries++) {
+      var hid = null;
+      for (var p = el; p && p !== document.body; p = p.parentElement) { if (!visible(p)) { hid = p; } else if (hid) break; }
+      var cur = el, target = null; for (var q = el; q && q !== document.body; q = q.parentElement) { if (!visible(q) && (q.id || (q.getAttribute && (q.getAttribute('data-path') || q.getAttribute('data-cat'))))) { target = q; } }
+      if (!target) target = hid; if (!target) break;
+      var ks = []; if (target.id) ks.push(target.id); ['data-path', 'data-cat', 'data-tab', 'data-page', 'data-id', 'data-key'].forEach(function (at) { var v = target.getAttribute && target.getAttribute(at); if (v) ks.push(v); }); if (!ks.length) break;
+      var cs = controllers(ks); if (!cs.length) break;
+      for (var c = 0; c < cs.length; c++) { try { cs[c].click(); } catch (e) {} if (visible(el)) return; }
+    }
+  }
+  function flash(el) {
+    try { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } catch (e) { el.scrollIntoView(); }
+    el.classList.add('av-hit'); setTimeout(function () { el.classList.remove('av-hit'); }, 3200);
+  }
+  function land() {
+    var h = location.hash; if (!h || h.length < 2) return;
+    var want = null, byId = null;
+    try { if (h.indexOf('#find=') === 0) want = decodeURIComponent(h.slice(6)); else byId = decodeURIComponent(h.slice(1)); } catch (e) { return; }
+    var tries = 0;
+    (function attempt() {
+      var el = byId ? document.getElementById(byId) : (want ? findByText(want) : null);
+      if (el) { if (!visible(el)) reveal(el); if (visible(el)) { flash(el); return; } }
+      if (++tries < 22) setTimeout(attempt, 400);
+    })();
+  }
+  window.__avSearch = { goSearch: goSearch, land: land, findByText: findByText };
+  function init() { place(); setTimeout(place, 1500); land(); }
+  if (document.readyState === 'complete') setTimeout(init, 200); else addEventListener('load', function () { setTimeout(init, 200); });
+  addEventListener('hashchange', land);
+})();
+</script>
+</body>
+</html>

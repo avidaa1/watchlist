@@ -1,0 +1,13 @@
+"""Hand review of the rule-based list (done 2026-11-25). The automatic rules (genre / main subject / seed) over-match; a person removed obvious misfits.
+HACKERS and CYBERWAR are keep-lists (the genre rules there are too broad: cyberpunk / techno-thriller pulls in every robot film).
+Everything else is a removal list. Every removal is recorded in the build report."""
+KEEP_ONLY = {
+ "hackers": ["Sneakers|1992","Hackers|1995","The Net|1995","Johnny Mnemonic|1995","Existenz|1999","The Matrix|1999","Swordfish|2001","Tron|1982","Tron: Legacy|2010","Untraceable|2008","The Social Network|2010","Anonymous|2011","The Girl with the Dragon Tattoo|2011","Halt and Catch Fire|2014","Who Am I – No System is Safe|2014","Citizenfour|2014","Blackhat|2015","Mr. Robot|2015","Snowden|2016","Live Free or Die Hard|2007","Unfriended: Dark Web|2018","Silicon Valley|2014","Nerve|2016","Dark|2017"][:20],
+ "cyberwar": ["WarGames|1983","Hackers|1995","Enemy of the State|1998","Live Free or Die Hard|2007","Skyfall|2012","The Fifth Estate|2013","Who Am I – No System is Safe|2014","Citizenfour|2014","Blackhat|2015","CSI: Cyber|2015","Mr. Robot|2015","Snowden|2016","Leave the World Behind|2023","Unfriended: Dark Web|2018"],
+}
+REMOVE = {
+ "ai": ["Weird Science|1985","Deadly Friend|1986","Star Trek: Nemesis|2002","Robots|2005","Moon|2009","Big Hero 6|2014","Tomorrowland|2015","Space Jam: A New Legacy|2021","Sleeper|1973","Prometheus|2012","Alien: Romulus|2024","Terminator: Dark Fate|2019"][:11],
+ "aliens": ["Highlander II: The Quickening|1991","Ghosts of Mars|2001","Doom|2005","Zack Snyder's Justice League|2021","Rocketman|2019","Us|2019","Silo|2023","Cloverfield|2008","Justice League|2017","Man of Steel|2013","Dark Phoenix|2019","Spaceballs|1987","Heavy Metal|1981","Superman II|1980","Transformers|2007","Transformers: Dark of the Moon|2011","Far Side of the Moon|2003","Tomorrowland|2015","Prometheus|2012"],
+ "westerns": ["Breaking Bad|2008","Sons of Anarchy|2008","Resident Evil: Extinction|2007","The Treasure of the Sierra Madre|1948","Midnight Cowboy|1969","Giant|1956","Holes|2003","The Hills Have Eyes|1977","Ghosts of Mars|2001","Machete|2010","Fallout|2024","O. Henry's Full House|1952","The Longest Ride|2015","The Devil's Rejects|2005","Road to Avonlea|1990","Harley Davidson and the Marlboro Man|1991","Thunderheart|1992","Queen of Fist|1973","Solo: A Star Wars Story|2018","The Dark Tower|2017","Nomadland|2020","Vampires|1998","Legends of the Fall|1994","Once Upon a Time in America|1984","Sin City|2005","There Will Be Blood|2007"],
+ "crypto": ["Death Wish|1974","The Social Network|2010","The Wolf of Wall Street|2013","Dumb Money|2023"],
+}
